@@ -1,0 +1,44 @@
+---
+- set_fact:
+    ec2_instance_short_hostname: "{{ aws_resource_tag_slug.lower() }}-{{ ec2_env_slug.lower() }}-app"
+
+- set_fact:
+    ec2_instance_fqdn: "{{ ec2_instance_short_hostname }}"
+
+- set_fact:
+    ec2_instance_pretty_name: "ANSIBLE {{ aws_resource_tag_slug }} {{ ec2_env_slug }} app"
+
+- name: "Create X app node(s) per private subnet"
+  ec2:
+    key_name: "{{ aws_ssh_keypair_name }}"
+    region: "{{ aws_vpc_region }}"
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    group_id:
+      - "{{ ec2_group_app_result.group_id }}"
+    instance_type: "{{ ec2_app_node_config.instance_type }}"
+    image: "{{ ec2_app_node_config.ami }}"    # Use `AWS_DEFAULT_REGION=XXXXX aws-get-latest-ami-id` from acro infrastructure repo. AMIs are region-specific.
+    wait: yes
+    wait_timeout: 600
+    volumes:
+      - device_name: /dev/sda1
+        volume_type: gp2
+        volume_size: "{{ ec2_app_node_config.volume_size_gb }}"
+    vpc_subnet_id: "{{ item }}"
+    assign_public_ip: no
+    #count: 1            # parameters (exact_count|count) are mutually exclusive.
+    #state: present      # parameters (exact_count|state) are mutually exclusive.
+    count_tag:
+      ansible-host-id: "{{ ec2_instance_fqdn }}"    # This is actually what controls how many instances there are.
+    exact_count: "{{ ec2_app_node_config.count_per_subnet }}"
+    termination_protection: true
+    ebs_optimized: yes
+    #instance_profile_name: "Server"   # AKA "IAM Role from the AWS console"
+    instance_tags: "{{ aws_billing_tags | combine({'Name': ec2_instance_pretty_name, 'ansible-host-id': ec2_instance_fqdn })  }}"
+    user_data: "{{ lookup('template', ec2_udf_template_path ) }}"
+  loop: "{{ aws_vpc_private_subnet_id_list }}"
+  register: ec2_appnode_result
+
+- debug:
+    var: ec2_appnode_result
+    verbosity: 1

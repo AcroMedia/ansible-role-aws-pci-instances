@@ -1,0 +1,20 @@
+---
+- set_fact:
+    aws_ssh_keypair_name: "ansible.{{ lookup('env','USER') }}"
+
+- name: Upload your ssh public key to AWS so you can provision ec2 resources
+  ec2_key:
+    region: "{{ aws_vpc_region }}"
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    name: "{{ aws_ssh_keypair_name }}"
+    key_material: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+  tags:
+    - ec2_key
+  register: ec2_key_result
+
+- debug:
+    var: ec2_key_result
+    verbosity: 1
+  tags:
+    - ec2_key

@@ -1,0 +1,101 @@
+---
+- set_fact:
+      elb_target_group_name: "ansible-{{ aws_resource_tag_slug.lower() }}-{{ ec2_env_slug.lower() }}-target-group"
+
+- set_fact:
+    elb_target_list_as_json: '[
+      {% for result in ec2_appnode_result.results %}
+      {% set outer_loop = loop %}
+      {% for instance in result.tagged_instances %}
+      {% if (loop.index0 > 0) or (outer_loop.index0 > 0) %},{% endif %}
+      {"Id": "{{ instance.id }}", "Port": 80}
+      {% endfor %}
+      {% endfor %}
+      ]'
+
+- name: Configure ELB Target Group
+  elb_target_group:   # See https://docs.ansible.com/ansible/latest/modules/elb_target_group_module.html
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    # health_check_interval: 10
+    # health_check_path: /
+    # health_check_port: 80
+    # health_check_protocol: http
+    # health_check_timeout: 5
+    # healthy_threshold_count: 2
+    modify_targets: yes # Whether or not to alter existing targets in the group to match what is passed with the module
+    name: "{{ elb_target_group_name }}"
+    port: 80
+    protocol: http
+    purge_tags: no
+    region: "{{ aws_vpc_region }}"
+    state: present
+    stickiness_enabled: no
+    #stickiness_lb_cookie_duration: 3600
+    #stickiness_type: lb_cookie
+    successful_response_codes: "200-299,300-399"
+    tags: "{{ aws_billing_tags }}"
+    target_type: instance
+    targets: "{{ elb_target_list_as_json }}"
+    #unhealthy_threshold_count: 10
+    vpc_id: "{{ vpc_result.vpc.id }}"
+    wait: no
+    #wait_timeout: 180
+  register: elb_target_group_result
+
+- debug:
+    var: elb_target_group_result
+    verbosity: 1
+
+- name: Configure Application Load Balancer
+  elb_application_lb:     # See https://docs.ansible.com/ansible/latest/modules/elb_application_lb_module.html
+    #access_logs_enabled: no   # we will log with ELK instead
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    deletion_protection: yes
+    http2: yes
+    idle_timeout: 300
+    listeners:
+      - Protocol: HTTPS
+        Port: 443
+        DefaultActions:
+          - Type: forward
+            TargetGroupName: "{{ elb_target_group_name }}"
+        Certificates:
+          - CertificateArn: "{{ elb_listener_ssl_cert_arn }}"
+        SslPolicy: ELBSecurityPolicy-TLS-1-2-2017-01
+    name: "ansible-{{ aws_resource_tag_slug.lower() }}-{{ ec2_env_slug }}-load-balancer"
+    purge_listeners: no
+    purge_rules: no
+    purge_tags: no
+    region: "{{ aws_vpc_region }}"
+    scheme: internet-facing
+    security_groups:
+      - "{{ ec2_group_lb_result.group_id }}"
+    state: present
+    subnets: "{{ public_subnet_result['results'] | map(attribute='subnet') | map(attribute='id') | list }}"
+    tags: "{{ aws_billing_tags }}"
+    wait: no
+    state: present
+  register: elb_application_lb_result
+
+- debug:
+    var: elb_application_lb_result
+    verbosity: 1
+
+- name: 'Append the plain HTTP listener to the ALB manually with aws cli, because of an outstading flaw in the elb_application_lb module. See https://github.com/ansible/ansible/issues/43506'
+  command: >
+    aws elbv2 create-listener
+    --load-balancer-arn "{{ elb_application_lb_result.load_balancer_arn }}"
+    --protocol HTTP
+    --port 80
+    --default-actions 'Type=redirect,RedirectConfig={Protocol=HTTPS,Port=443,Host="#{host}",Path="/#{path}",Query="#{query}",StatusCode=HTTP_302}'
+  environment:
+    AWS_ACCESS_KEY_ID: "{{ aws_api_access_key }}"
+    AWS_SECRET_ACCESS_KEY: "{{ aws_api_secret_key }}"
+    AWS_DEFAULT_REGION: "{{ aws_vpc_region }}"
+  register: elb_create_listenter_result
+  changed_when: elb_application_lb_result.changed   # The command always shows changed, but it's idempotent. Just pretend this changes when the real load balancer task changes.
+- debug:
+    var: elb_create_listenter_result
+    verbosity: 1

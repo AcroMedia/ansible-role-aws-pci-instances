@@ -1,0 +1,159 @@
+---
+- set_fact:
+    ec2_group_name_bastions: "ANSIBLE {{ aws_resource_tag_slug}} {{ ec2_env_slug }} bastions"
+- name: Create a security group for the bastion host
+  ec2_group:
+    name: "{{ ec2_group_name_bastions }}"
+    description: "{{ ec2_group_name_bastions }}"
+    vpc_id: "{{ vpc_result.vpc.id }}"
+    region: "{{ aws_vpc_region }}"
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    purge_tags: no
+    tags: "{{ aws_billing_tags | combine({'Name': ec2_group_name_bastions }) }}"
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+  register: ec2_group_bastion_result
+- debug:
+    var: ec2_group_bastion_result
+    verbosity: 1
+
+- set_fact:
+    ec2_group_name_lbs: "ANSIBLE {{ aws_resource_tag_slug }} {{ ec2_env_slug }} load balancers"
+- name: Create a security group for the load balancer
+  ec2_group:
+    name: "{{ ec2_group_name_lbs }}"
+    description: "{{ ec2_group_name_lbs }}"
+    vpc_id: "{{ vpc_result.vpc.id }}"
+    region: "{{ aws_vpc_region }}"
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    purge_tags: no
+    tags: "{{ aws_billing_tags | combine({'Name': ec2_group_name_lbs }) }}"
+    rules:
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        cidr_ip: 0.0.0.0/0
+  register: ec2_group_lb_result
+- debug:
+    var: ec2_group_lb_result
+    verbosity: 1
+
+- set_fact:
+    ec2_group_name_appnodes: "ANSIBLE {{ aws_resource_tag_slug}} {{ ec2_env_slug }} app nodes"
+- name: Create a security group for the app nodes
+  ec2_group:
+    name: "{{ ec2_group_name_appnodes }}"
+    description: "{{ ec2_group_name_appnodes }}"
+    vpc_id: "{{ vpc_result.vpc.id }}"
+    region: "{{ aws_vpc_region }}"
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    purge_tags: no
+    tags: "{{ aws_billing_tags | combine({'Name': ec2_group_name_appnodes }) }}"
+    rules:
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        group_id: "{{ ec2_group_lb_result.group_id }}"
+        #group_id: "{{ aws_account_id }}/{{ ec2_group_lb_result.group_id }}/{{ ec2_group_name_lbs }}"
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        group_id: "{{ ec2_group_bastion_result.group_id }}"
+        #group_id: "{{ aws_account_id }}/{{ ec2_group_bastion_result.group_id }}/{{ ec2_group_name_bastions }}"
+  register: ec2_group_app_result
+- debug:
+    var: ec2_group_app_result
+    verbosity: 1
+
+- set_fact:
+    ec2_group_name_dbnodes: "ANSIBLE {{ aws_resource_tag_slug }} db nodes"
+- name: Create a security group for the DB instances
+  ec2_group:
+    name: "{{ ec2_group_name_dbnodes }}"
+    description: "{{ ec2_group_name_dbnodes }}"
+    vpc_id: "{{ vpc_result.vpc.id }}"
+    region: "{{ aws_vpc_region }}"
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    purge_tags: no
+    tags: "{{ aws_billing_tags | combine({'Name': ec2_group_name_dbnodes }) }}"
+    rules:
+      - proto: tcp
+        from_port: 3306
+        to_port: 3306
+        group_id: "{{ ec2_group_app_result.group_id }}"
+        #group_id: "{{ aws_account_id }}/{{ ec2_group_app_result.group_id }}/{{ ec2_group_name_appnodes }}"
+  register: ec2_group_db_result
+- debug:
+    var: ec2_group_db_result
+    verbosity: 1
+
+- set_fact:
+    ec2_group_name_filenodes: "ANSIBLE {{ aws_resource_tag_slug }} {{ ec2_env_slug }} file nodes"
+- name: Create a security group for the NFS/EFS instances
+  ec2_group:
+    name: "{{ ec2_group_name_filenodes }}"
+    description: "{{ ec2_group_name_filenodes }}"
+    vpc_id: "{{ vpc_result.vpc.id }}"
+    region: "{{ aws_vpc_region }}"
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    purge_tags: no
+    tags: "{{ aws_billing_tags | combine({'Name': ec2_group_name_filenodes }) }}"
+    rules:
+      - proto: tcp
+        from_port: 2049
+        to_port: 2049
+        group_id: "{{ ec2_group_app_result.group_id }}"
+        #group_id: "{{ aws_account_id }}/{{ ec2_group_app_result.group_id }}/{{ ec2_group_name_appnodes }}"
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        group_id: "{{ ec2_group_bastion_result.group_id }}"
+        #group_id: "{{ aws_account_id }}/{{ ec2_group_bastion_result.group_id }}/{{ ec2_group_name_bastions }}"
+  register: ec2_group_filenode_result
+- debug:
+    var: ec2_group_filenode_result
+    verbosity: 1
+- set_fact:
+    ec2_file_nodes_security_group_id: "{{ ec2_group_filenode_result.group_id }}"
+
+- set_fact:
+    ec2_group_name_cachenodes: "ANSIBLE {{ aws_resource_tag_slug }} {{ ec2_env_slug }} cache nodes"
+- name: Create a security group for the Redis cache instances
+  ec2_group:
+    name: "{{ ec2_group_name_cachenodes }}"
+    description: "{{ ec2_group_name_cachenodes }}"
+    vpc_id: "{{ vpc_result.vpc.id }}"
+    region: "{{ aws_vpc_region }}"
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    purge_tags: no
+    tags: "{{ aws_billing_tags | combine({'Name': ec2_group_name_cachenodes }) }}"
+    rules:
+      - proto: tcp
+        from_port: 6379
+        to_port: 6379
+        group_id: "{{ ec2_group_app_result.group_id }}"
+        #group_id: "{{ aws_account_id }}/{{ ec2_group_app_result.group_id }}/{{ ec2_group_name_appnodes }}"
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        group_id: "{{ ec2_group_bastion_result.group_id }}"
+        #group_id: "{{ aws_account_id }}/{{ ec2_group_bastion_result.group_id }}/{{ ec2_group_name_bastions }}"
+  register: ec2_group_cachenodes_result
+- debug:
+    var: ec2_group_cachenodes_result
+    verbosity: 1
+- set_fact:
+    ec2_cache_nodes_security_group_id: "{{ ec2_group_cachenodes_result.group_id }}"

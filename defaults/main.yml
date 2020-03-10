@@ -1,0 +1,63 @@
+---
+# Make sure vars from acromedia.aws-pci-network are also in your group_vars/all.yml.
+# These include, but may not be limited to:
+# - aws_resource_tag_slug
+# - aws_vpc_region
+# - aws_vpc_private_net_cidr
+# - aws_vpc_public_subnets
+# - aws_vpc_private_subnets
+# - aws_billing_tags
+# - aws_api_access_key
+# - aws_api_secret_key
+
+# Vars for ec2 creation
+ec2_env_slug: CHANGE_ME     # Used for naming EC2 resources. E.g: "prod", "uat", "dev", etc
+route53_hosted_domain: subdomain.example.com    # This must already be set up and working.
+ec2_udf_template_path: ./path/to/user-data-script-from-your-own-playbook.sh.j2
+
+# Go look up the latest AMI for your region. AMI's are region specic.
+ec2_defautlt_ami: ami-XXXXXXXXXXX   # E.g: ami-064efdb82ae15e93f (Ubuntu bionic server, release 20200131, ebs-ssd, amd64, ca-central-1, hvm)
+
+# Bastion host
+ec2_bastion_config:
+  instance_type: t3.micro
+  ami: "{{ ec2_defautlt_ami }}"
+  volume_size_gb: 8
+
+# File node creation
+ec2_file_node_config:
+  instance_type: t3.micro
+  ami: "{{ ec2_defautlt_ami }}"
+  volume_size_gb: 20
+
+# App node creation
+ec2_app_node_config:
+  count_per_subnet: 1
+  instance_type: t3.micro
+  ami: "{{ ec2_defautlt_ami }}"
+  volume_size_gb: 20
+
+# RDS instance creation
+rds_instance_config:
+  db_instance_identifier: "ansible-{{ aws_resource_tag_slug.lower() }}-{{ ec2_env_slug.lower() }}-db"
+  engine: mariadb
+  engine_version: '10.3'
+  instance_class: db.t3.micro
+  allocated_storage: 20
+  availability_zone: "{{ aws_vpc_region }}a"    # not a typo ...  - arbitrarily setting first zone, as in: ca-central-1a
+  multi_az: no
+  backup_retention_days: 21
+
+# Elasticache creation
+elasticache_config:
+  name: "ansible-{{ aws_resource_tag_slug.lower() }}-{{ ec2_env_slug.lower() }}-cache"
+  engine: redis
+  engine_version: '5.0.6'
+  port: 6379
+  instance_type: cache.t3.micro
+  num_nodes: 1
+  state: present     # present / absent / rebooted
+  availability_zone: "{{ aws_vpc_region }}a"    # not a typo ...  aka ca-central-1a
+
+# ELB creation
+elb_listener_ssl_cert_arn: 'You_need_to_set_This_up_before_running_the_role' # e.g:  arn:aws:acm:us-east-1:123456789:certificate/a0a0a00-a00a0a0a0-a00a0a0a
