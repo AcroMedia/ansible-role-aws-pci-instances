@@ -99,3 +99,20 @@
 - debug:
     var: elb_create_listenter_result
     verbosity: 1
+
+- name: Create a human-usable DNS name for the load balancer
+  route53:
+    alias: yes
+    alias_hosted_zone_id: "{{ elb_application_lb_result.canonical_hosted_zone_id }}"
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    record: "{{ aws_resource_tag_slug.lower() }}-{{ ec2_env_slug.lower() }}-lb.{{ route53_hosted_domain }}"
+    state: present
+    ttl: '300'
+    type: "A"
+    value: "{{ elb_application_lb_result.dns_name }}"
+    zone: "{{ route53_hosted_domain }}"
+  register: route53_pretty_name_result
+- debug:
+    var: route53_pretty_name_result
+    verbosity: 1
