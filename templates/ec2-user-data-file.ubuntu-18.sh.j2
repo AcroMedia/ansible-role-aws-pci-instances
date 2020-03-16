@@ -26,6 +26,9 @@ function main () {
 {% for adm in ec2_sysadmins %}
     GITHUB_USER={{ adm.github_account }} ./scripts/deployables/acro-add-user.sh {{ adm.local_user }} --from-github --with-sudo
 {% endfor %}
+    ## If you have a private gitlab server, you can also do this,
+    ## (assumes the gitlab user account is the same as local username to create):
+    # GITLAB_SERVER_URL='https://my.server.com' ./acro-add-user.sh --from-gitlab --with-sudo username
 
     # Set internal hostname
     ./bin/set_fqdn.sh "{{ ec2_instance_fqdn }}" --replace
