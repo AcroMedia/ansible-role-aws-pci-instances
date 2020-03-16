@@ -20,13 +20,23 @@ ec2_ssh_pubkey_path: '~/.ssh/id_rsa.pub'  # Where on your local machine can the 
 
 route53_hosted_domain: subdomain.example.com    # This must already be set up and working.
 
-# ec2_sysadmins: Provide a list of github acccounts, and the account name you want created on the server.
+# ec2_sysadmins_from_github:
+# Provide a list of github acccounts, plus the account name you want created on the server.
 # Each entry will be created with passwordless sudo on the server, and their public keys given SSH access.
 # Be careful with typos, obviously.
-ec2_sysadmins: []
+ec2_sysadmins_from_github: []
 #  - github_account: im-batman
 #    local_user: bwayne
+#  - github_account: webs4life
+#    local_user: pparker
 
+# ec2_sysadmins_from_gitlab
+# Accepts just a flat list of names, as we assume private gitlab users share the same naming convention as sysadmin usernames.
+# Be careful with typos, obviously.
+ec2_sysadmins_from_gitlab_server_url: 'https://my-private-gitlab-server.example.com'
+ec2_sysadmins_from_gitlab: []
+# - pparker
+# - bbanner
 
 ec2_udf_template_path: "{{ role_path }}/templates/ec2-user-data-file.ubuntu-18.sh.j2"
 

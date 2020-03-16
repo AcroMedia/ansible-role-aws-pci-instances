@@ -16,25 +16,24 @@ function main () {
     apt-get -yqq install curl awscli git make
     mkdir -p /root/git/acro
     cd /root/git/acro
-    git clone "https://github.com/AcroMedia/ansible-role-devops-utils.git"
-    cd ansible-role-devops-utils
+    git clone "https://github.com/AcroMedia/ansible-role-devops-utils"
+    cd ansible-role-devops-utils/scripts/deployables
 
     # Let all in the "sudo" group run passwordless sudo
-    ./bin/passwordless-sudo.sh sudo
+    ./passwordless-sudo.sh sudo
 
     # Add real users
-{% for adm in ec2_sysadmins %}
-    GITHUB_USER={{ adm.github_account }} ./scripts/deployables/acro-add-user.sh {{ adm.local_user }} --from-github --with-sudo
+{% for adm in ec2_sysadmins_from_github %}
+    GITHUB_USER={{ adm.github_account }} ./acro-add-user.sh  --from-github --with-sudo {{ adm.local_user }}
 {% endfor %}
-    ## If you have a private gitlab server, you can also do this,
-    ## (assumes the gitlab user account is the same as local username to create):
-    # GITLAB_SERVER_URL='https://my.server.com' ./acro-add-user.sh --from-gitlab --with-sudo username
+{% for adm in ec2_sysadmins_from_gitlab %}
+    GITLAB_SERVER_URL='{{ ec2_sysadmins_from_gitlab_server_url }}' ./acro-add-user.sh --from-gitlab --with-sudo {{ adm }}
+{% endfor %}
 
     # Set internal hostname
-    ./bin/set_fqdn.sh "{{ ec2_instance_fqdn }}" --replace
+    ./set_fqdn.sh "{{ ec2_instance_fqdn }}" --replace
 
-    # Install sysadmin utils
-    cd scripts/deployables
+    # Install the ones we just used, and the rest of the utils.
     make -s install
 
     # Remove default generic user we don't need them any more.
