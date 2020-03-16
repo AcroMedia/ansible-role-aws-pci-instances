@@ -22,9 +22,12 @@ Provision AWS resources to support a PCI compliant HA web application:
 
 ## Required Variables
 
-- **udf_template_path** - This needs to come from your local playbook. Its the script that gets passed to and executed on new EC2 instances
 - **everything in defaults/main.yml** Copy defaults/main.yml to your own group_vars/all.yml filea as a starting point. Everything in there is required.
 - **variables registered by acromedia.ansible-role-aws-pci-network** - Running this role independently wont work.
+
+## Optional variables
+
+- **udf_template_path** - Its the script that gets passed to and executed on new EC2 instances. Brew your own, or use the one that comes with the role.
 
 ## Example playbook
 **group_vars/all.yml**:

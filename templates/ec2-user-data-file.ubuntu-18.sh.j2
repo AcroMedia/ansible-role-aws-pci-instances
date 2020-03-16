@@ -26,9 +26,11 @@ function main () {
 {% for adm in ec2_sysadmins_from_github %}
     GITHUB_USER={{ adm.github_account }} ./acro-add-user.sh  --from-github --with-sudo {{ adm.local_user }}
 {% endfor %}
+{% if ec2_sysadmins_from_gitlab_server_url != '' %}
 {% for adm in ec2_sysadmins_from_gitlab %}
     GITLAB_SERVER_URL='{{ ec2_sysadmins_from_gitlab_server_url }}' ./acro-add-user.sh --from-gitlab --with-sudo {{ adm }}
 {% endfor %}
+{% endif %}
 
     # Set internal hostname
     ./set_fqdn.sh "{{ ec2_instance_fqdn }}" --replace
@@ -49,7 +51,10 @@ function main () {
     PRIVATE_IP=$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p') || true
     INSTANCE_ID=$(curl -sS http://169.254.169.254/latest/meta-data/instance-id)
     SSH_FINGERPRINT=$(ssh-keygen -lf /etc/ssh/ssh_host_ecdsa_key.pub | awk '{print $2}')
-    # curl -Ss ....  # maybe we want to let some external service that we're alive and ready for service?
+
+{% if (ec2_post_provision_phone_home_command | trim) != '' %}
+    {{ ec2_post_provision_phone_home_command }}
+{% endif %}
 
   } 1> "$logfile" 2> "$errfile"
 
