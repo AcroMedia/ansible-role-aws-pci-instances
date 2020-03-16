@@ -1,12 +1,12 @@
 ---
 - set_fact:
-    elasticache_subnet_group_name: "ansible-{{ aws_resource_tag_slug.lower() }}-{{ ec2_env_slug.lower() }}-cache-subnet-group"
+    elasticache_subnet_group_name: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-cache-subnet-group-by-ansible"
 
 - name: Configure the elasticache subnet group
   elasticache_subnet_group:
     aws_access_key: "{{ aws_api_access_key }}"
     aws_secret_key: "{{ aws_api_secret_key }}"
-    description: "ANSIBLE {{ aws_resource_tag_slug }} {{ ec2_env_slug }} Cache subnet group"
+    description: "{{ aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' cache subnet group ' + aws_resource_name_suffix | trim }}"
     name: "{{ elasticache_subnet_group_name }}"
     region: "{{ aws_vpc_region }}"
     state: present
@@ -16,21 +16,21 @@
   elasticache:   #  See https://docs.ansible.com/ansible/latest/modules/elasticache_instance_module.html
     aws_access_key: "{{ aws_api_access_key }}"
     aws_secret_key: "{{ aws_api_secret_key }}"
-    cache_engine_version: "{{ elasticache_config.engine_version }}"
+    cache_engine_version: "{{ elasticache_engine_version }}"
     # cache_parameter_group: use default
-    cache_port: "{{ elasticache_config.port }}"
+    cache_port: "{{ elasticache_port }}"
     cache_subnet_group: "{{ elasticache_subnet_group_name }}"
-    engine: "{{ elasticache_config.engine }}"
+    engine: "{{ elasticache_engine }}"
     hard_modify: no
-    name: "{{ elasticache_config.name }}"
-    node_type: "{{ elasticache_config.instance_type }}"
-    num_nodes: "{{ elasticache_config.num_nodes }}"
+    name: "{{ elasticache_cluster_name }}"
+    node_type: "{{ elasticache_instance_type }}"
+    num_nodes: "{{ elasticache_num_nodes }}"
     region: "{{ aws_vpc_region }}"
-    state: "{{ elasticache_config.state }}"
+    state: "{{ elasticache_state }}"
     security_group_ids:
       - "{{ ec2_cache_nodes_security_group_id }}"
     wait: no
-    zone: "{{ elasticache_config.availability_zone }}"
+    zone: "{{ elasticache_availability_zone }}"
   register: elasticache_instance_result
 
 - debug:

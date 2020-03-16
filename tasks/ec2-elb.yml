@@ -1,6 +1,6 @@
 ---
 - set_fact:
-      elb_target_group_name: "ansible-{{ aws_resource_tag_slug.lower() }}-{{ ec2_env_slug.lower() }}-target-group"
+      elb_target_group_name: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-tgtGrp"
 
 - set_fact:
     elb_target_list_as_json: '[
@@ -64,7 +64,7 @@
         Certificates:
           - CertificateArn: "{{ elb_listener_ssl_cert_arn }}"
         SslPolicy: ELBSecurityPolicy-TLS-1-2-2017-01
-    name: "ansible-{{ aws_resource_tag_slug.lower() }}-{{ ec2_env_slug }}-load-balancer"
+    name: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug }}-lb"
     purge_listeners: no
     purge_rules: no
     purge_tags: no
@@ -106,12 +106,13 @@
     alias_hosted_zone_id: "{{ elb_application_lb_result.canonical_hosted_zone_id }}"
     aws_access_key: "{{ aws_api_access_key }}"
     aws_secret_key: "{{ aws_api_secret_key }}"
-    record: "{{ aws_resource_tag_slug.lower() }}-{{ ec2_env_slug.lower() }}-lb.{{ route53_hosted_domain }}"
+    record: "{{ elb_fqdn }}"
     state: present
     ttl: '300'
     type: "A"
     value: "{{ elb_application_lb_result.dns_name }}"
     zone: "{{ route53_hosted_domain }}"
+    overwrite: "{{ elb_dns_entry_overwrite }}"
   register: route53_pretty_name_result
 - debug:
     var: route53_pretty_name_result

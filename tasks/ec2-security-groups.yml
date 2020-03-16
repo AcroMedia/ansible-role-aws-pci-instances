@@ -1,6 +1,6 @@
 ---
 - set_fact:
-    ec2_group_name_bastions: "ANSIBLE {{ aws_resource_tag_slug}} {{ ec2_env_slug }} bastions"
+    ec2_group_name_bastions: "{{ aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' bastions ' + aws_resource_name_suffix | trim }}"
 - name: Create a security group for the bastion host
   ec2_group:
     name: "{{ ec2_group_name_bastions }}"
@@ -22,7 +22,7 @@
     verbosity: 1
 
 - set_fact:
-    ec2_group_name_lbs: "ANSIBLE {{ aws_resource_tag_slug }} {{ ec2_env_slug }} load balancers"
+    ec2_group_name_lbs: "{{ aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' load balancers ' + aws_resource_name_suffix | trim }}"
 - name: Create a security group for the load balancer
   ec2_group:
     name: "{{ ec2_group_name_lbs }}"
@@ -48,7 +48,7 @@
     verbosity: 1
 
 - set_fact:
-    ec2_group_name_appnodes: "ANSIBLE {{ aws_resource_tag_slug}} {{ ec2_env_slug }} app nodes"
+    ec2_group_name_appnodes: "{{ aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' app nodes ' + aws_resource_name_suffix | trim }}"
 - name: Create a security group for the app nodes
   ec2_group:
     name: "{{ ec2_group_name_appnodes }}"
@@ -76,7 +76,7 @@
     verbosity: 1
 
 - set_fact:
-    ec2_group_name_dbnodes: "ANSIBLE {{ aws_resource_tag_slug }} db nodes"
+    ec2_group_name_dbnodes: "{{ aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' db nodes ' + aws_resource_name_suffix | trim }}"
 - name: Create a security group for the DB instances
   ec2_group:
     name: "{{ ec2_group_name_dbnodes }}"
@@ -99,7 +99,7 @@
     verbosity: 1
 
 - set_fact:
-    ec2_group_name_filenodes: "ANSIBLE {{ aws_resource_tag_slug }} {{ ec2_env_slug }} file nodes"
+    ec2_group_name_filenodes: "{{ aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' file nodes ' + aws_resource_name_suffix | trim }}"
 - name: Create a security group for the NFS/EFS instances
   ec2_group:
     name: "{{ ec2_group_name_filenodes }}"
@@ -129,7 +129,7 @@
     ec2_file_nodes_security_group_id: "{{ ec2_group_filenode_result.group_id }}"
 
 - set_fact:
-    ec2_group_name_cachenodes: "ANSIBLE {{ aws_resource_tag_slug }} {{ ec2_env_slug }} cache nodes"
+    ec2_group_name_cachenodes: "{{ aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' cache nodes ' + aws_resource_name_suffix | trim }}"
 - name: Create a security group for the Redis cache instances
   ec2_group:
     name: "{{ ec2_group_name_cachenodes }}"

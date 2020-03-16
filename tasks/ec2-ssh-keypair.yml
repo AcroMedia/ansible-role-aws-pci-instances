@@ -8,7 +8,7 @@
     aws_access_key: "{{ aws_api_access_key }}"
     aws_secret_key: "{{ aws_api_secret_key }}"
     name: "{{ aws_ssh_keypair_name }}"
-    key_material: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+    key_material: "{{ lookup('file', ec2_ssh_pubkey_path) }}"
   tags:
     - ec2_key
   register: ec2_key_result
