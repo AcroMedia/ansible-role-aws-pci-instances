@@ -61,7 +61,7 @@
     zone: "{{ route53_hosted_domain }}"
     record: "{{ ec2_bastion_fqdn }}."
     type: A
-    ttl: 3600
+    ttl: 300
     value: "{{ bastion_eip_result.public_ip }}"
     overwrite: true
   register: bastion_dns_result
