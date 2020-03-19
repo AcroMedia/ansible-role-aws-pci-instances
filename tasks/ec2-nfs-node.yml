@@ -19,8 +19,8 @@
     wait: yes
     wait_timeout: 600
     volumes:
-      - device_name: /dev/sda1
-        volume_type: gp2
+      - device_name: "{{ ec2_default_volume_device_name }}"
+        volume_type: "{{ ec2_default_volume_type }}"
         volume_size: "{{ ec2_nfs_node_volume_size_gb }}"
     vpc_subnet_id: "{{ aws_vpc_private_subnet_id_list[0] }}" # Theres' only one file node, it can just be on the first private subnet.
     assign_public_ip: no
