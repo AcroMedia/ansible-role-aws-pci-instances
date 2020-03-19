@@ -2,7 +2,7 @@
 set -eu
 set -o pipefail
 
-# AcroMedia AWS EC2 bootstrapper template for Ubuntu 18 instances
+# AcroMedia AWS EC2 bootstrapper template for Ubuntu (18) or CentOS (7) instances.
 # User data scripts are executed as root. No need for sudo.
 # See https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html
 
@@ -11,9 +11,8 @@ function main () {
   errfile=/tmp/udf-init.stderr
   {
     export DEBIAN_FRONTEND=noninteractive
-    apt-get -yqq update
-    apt-get -yqq upgrade
-    apt-get -yqq install curl awscli git make
+    (apt-get -yqq update && apt-get -yqq upgrade ) || yum -y update
+    apt-get -yqq install curl awscli git make || yum -y install curl awscli git make
 
     # Gather some useful information,
     PRIVATE_IP=$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p') || true
@@ -25,8 +24,8 @@ function main () {
     git clone "https://github.com/AcroMedia/ansible-role-devops-utils"
     cd ansible-role-devops-utils/scripts/deployables
 
-    # Let all in the "sudo" group run passwordless sudo
-    ./passwordless-sudo.sh sudo
+    # Let admins run passwordless sudo
+    ./passwordless-sudo.sh sudo || ./passwordless-sudo.sh wheel
 
     # Add real users
 {% for adm in ec2_sysadmins_from_github %}
@@ -45,12 +44,11 @@ function main () {
     make -s install
 
     # Remove default generic user we don't need them any more.
-    userdel --remove ubuntu
+    userdel --remove ubuntu  || userdel --remove centos
 
 {% if '-app' in ec2_instance_fqdn %}
     # App nodes get NGINX installed off the bat, so they can be "healthy" by default when the get attached to the load balancer
-    apt-add-repository --yes --update ppa:nginx/stable
-    apt-get -yqq install nginx
+    (apt-add-repository --yes --update ppa:nginx/stable && apt-get -yqq install nginx) || yum -y install nginx
 {% endif %}
 
 
