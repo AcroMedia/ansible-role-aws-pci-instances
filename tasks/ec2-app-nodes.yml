@@ -22,6 +22,7 @@
       - device_name: "{{ ec2_default_volume_device_name }}"
         volume_type: "{{ ec2_default_volume_type }}"
         volume_size: "{{ ec2_app_node_volume_size_gb }}"
+        delete_on_termination: true
     vpc_subnet_id: "{{ item }}"
     assign_public_ip: no
     #count: 1            # parameters (exact_count|count) are mutually exclusive.

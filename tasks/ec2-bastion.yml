@@ -22,6 +22,7 @@
       - device_name: "{{ ec2_default_volume_device_name }}"
         volume_type: "{{ ec2_default_volume_type }}"
         volume_size: "{{ ec2_bastion_volume_size_gb }}"
+        delete_on_termination: true
     vpc_subnet_id: "{{  public_subnet_result['results'][0]['subnet']['id'] }}"
     assign_public_ip: yes
     #count: 1            # parameters (exact_count|count) are mutually exclusive.
