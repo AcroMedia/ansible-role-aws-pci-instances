@@ -129,6 +129,48 @@
     ec2_file_nodes_security_group_id: "{{ ec2_group_filenode_result.group_id }}"
 
 - set_fact:
+    ec2_group_name_elk: "{{ aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' elk ' + aws_resource_name_suffix | trim }}"
+- name: Create a security group for the elk host
+  ec2_group:
+    name: "{{ ec2_group_name_elk }}"
+    description: "{{ ec2_group_name_elk }}"
+    vpc_id: "{{ vpc_result.vpc.id }}"
+    region: "{{ aws_vpc_region }}"
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    purge_tags: no
+    tags: "{{ aws_billing_tags | combine({'Name': ec2_group_name_elk }) }}"
+    rules:
+      - proto: tcp
+        from_port: 9600
+        to_port: 9600
+        group_id: "{{ ec2_group_app_result.group_id }}"
+      - proto: tcp
+        from_port: 9600
+        to_port: 9600
+        group_id: "{{ ec2_group_filenode_result.group_id }}"
+      - proto: tcp
+        from_port: 9600
+        to_port: 9600
+        group_id: "{{ ec2_group_bastion_result.group_id }}"
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        group_id: "{{ ec2_group_bastion_result.group_id }}"
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        cidr_ip: 0.0.0.0/0
+  register: ec2_group_elk_result
+- debug:
+    var: ec2_group_elk_result
+    verbosity: 1
+
+- set_fact:
     ec2_group_name_cachenodes: "{{ aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' cache nodes ' + aws_resource_name_suffix | trim }}"
 - name: Create a security group for the Redis cache instances
   ec2_group:

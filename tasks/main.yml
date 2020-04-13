@@ -6,4 +6,6 @@
 - import_tasks: ./elasticache.yml
 - import_tasks: ./ec2-nfs-node.yml
 - import_tasks: ./ec2-app-nodes.yml
+- import_tasks: ./ec2-elk.yml
+  when: ec2_elk_node == true
 - import_tasks: ./ec2-elb.yml

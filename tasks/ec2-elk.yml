@@ -1,0 +1,122 @@
+---
+- set_fact:
+    ec2_instance_pretty_name: "{{ aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' elk ' + aws_resource_name_suffix | trim }}"
+    ec2_ansible_group_id: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-elk" # this controls how many instances are launched
+
+- set_fact:
+    ec2_instance_hostname_base: "{{ ec2_elk_node_hostname_short }}"  #  For the benefit of the UDF template
+    ec2_instance_fqdn: "{{ ec2_elk_node_fqdn }}"  #  For the benefit of the UDF template
+
+- name: Create an elk host
+  ec2:
+    key_name: "{{ aws_ssh_keypair_name }}"
+    region: "{{ aws_vpc_region }}"
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    group_id:
+      - "{{ ec2_group_elk_result.group_id }}"
+    instance_type: "{{ ec2_elk_node_instance_type }}"
+    image: "{{ ec2_elk_node_ami }}"
+    wait: yes
+    wait_timeout: 600
+    volumes:
+      - device_name: "{{ ec2_default_volume_device_name }}"
+        volume_type: "{{ ec2_default_volume_type }}"
+        volume_size: "{{ ec2_elk_node_volume_size_gb }}"
+        delete_on_termination: true
+    vpc_subnet_id: "{{  public_subnet_result['results'][0]['subnet']['id'] }}"
+    assign_public_ip: yes
+    #count: 1            # parameters (exact_count|count) are mutually exclusive.
+    #state: present      # parameters (exact_count|state) are mutually exclusive.
+    count_tag:
+      ansible-group-id: "{{ ec2_ansible_group_id }}"    # This is actually what controls how many instances there are.
+    exact_count: 1
+    termination_protection: true
+    ebs_optimized: yes
+    #instance_profile_name: "Server"   # AKA "IAM Role from the AWS console"
+    instance_tags: "{{ aws_billing_tags | combine({'Name': ec2_instance_pretty_name,
+      'ansible-host-id': ec2_elk_node_fqdn,
+      'ansible-group-id': ec2_ansible_group_id })  }}"
+    user_data: "{{ lookup('template', ec2_udf_template_path ) }}"
+  register: ec2_elk_node_result
+
+- debug:
+    var: ec2_elk_node_result
+    verbosity: 1
+
+
+- name: Get elk node volume ID
+  ec2_vol:
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    region: "{{ aws_vpc_region }}"
+    instance: "{{ ec2_elk_node_result.tagged_instances[0].id }}"
+    state: list
+  register: elknode_vol_result
+
+- debug:
+    var: elknode_vol_result
+    verbosity: 1
+
+- name: Apply tags to elk node volumes
+  ec2_tag:
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    region: "{{ aws_vpc_region }}"
+    resource: "{{ item.id }}"
+    state: present
+    tags: "{{ aws_billing_tags | combine({'Name': ec2_elk_node_fqdn + ' ' + item.attachment_set.device }) }}"
+  with_items: "{{ elknode_vol_result.volumes }}"
+  register: elknode_vol_tag_result
+
+- debug:
+    var: elknode_vol_tag_result
+    verbosity: 1
+
+
+- name: Create an Elastic IP for the elk node
+  ec2_eip:
+    region: "{{ aws_vpc_region }}"
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    allow_reassociation: false
+    device_id: "{{ ec2_elk_node_result.tagged_instances[0].id }}"
+  register: elk_node_eip_result
+
+- debug:
+    var: elk_node_eip_result
+    verbosity: 1
+
+- name: Create a DNS record for the elk node's EIP
+  route53:
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    state: present
+    zone: "{{ route53_hosted_domain }}"
+    record: "{{ ec2_elk_node_fqdn }}."
+    type: A
+    ttl: 300
+    value: "{{ elk_node_eip_result.public_ip }}"
+    overwrite: true
+  register: elk_node_dns_result
+
+- debug:
+    var: elk_node_dns_result
+    verbosity: 1
+
+- set_fact:
+    _elk_node_eip_name: "{{ aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' elk node EIP ' + aws_resource_name_suffix | trim }}"
+
+- name: Tag the elk node's elastic IP(s)
+  ec2_tag:
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    region: "{{ aws_vpc_region }}"
+    resource: "{{ elk_node_eip_result.allocation_id }}"
+    state: present
+    tags: "{{ aws_billing_tags | combine({'Name': _elk_node_eip_name}) }}"
+  register: elk_node_eip_tag_result
+
+- debug:
+    var: elk_node_eip_tag_result
+    verbosity: 1

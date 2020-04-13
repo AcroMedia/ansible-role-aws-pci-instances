@@ -69,6 +69,13 @@ ec2_app_node_volume_size_gb: 20
 ec2_app_node_hostname_short: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-app"
 ec2_app_node_fqdn: "{{ ec2_app_node_hostname_short }}"
 
+# ELK stack: Kibana front end, elastic search + log stash ... all in one for now.
+ec2_elk_node: false
+ec2_elk_node_instance_type: t3.micro
+ec2_elk_node_ami: "{{ ec2_defautlt_ami }}"
+ec2_elk_node_volume_size_gb: 20
+ec2_elk_node_hostname_short: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-elk"
+ec2_elk_node_fqdn: "{{ ec2_elk_node_hostname_short }}.{{ route53_hosted_domain.lower() }}"
 
 # RDS instance creation
 rds_db_name: "{{ aws_resource_tag_slug.lower() }}{{ aws_resource_env_slug.lower() }}" # Cant contain punctuation.
