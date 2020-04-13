@@ -1,6 +1,7 @@
 ---
 - set_fact:
     ec2_instance_pretty_name: "{{ aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' bastion ' + aws_resource_name_suffix | trim }}"
+    ec2_ansible_group_id: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-bastion" # this controls how many instances are launched
 
 - set_fact:
     ec2_instance_hostname_base: "{{ ec2_bastion_hostname_short }}"  #  For the benefit of the UDF template
@@ -28,12 +29,14 @@
     #count: 1            # parameters (exact_count|count) are mutually exclusive.
     #state: present      # parameters (exact_count|state) are mutually exclusive.
     count_tag:
-      ansible-host-id: "{{ ec2_bastion_fqdn }}"    # This is actually what controls how many instances there are.
+      ansible-group-id: "{{ ec2_ansible_group_id }}"    # This is actually what controls how many instances there are.
     exact_count: 1
     termination_protection: true
     ebs_optimized: yes
     #instance_profile_name: "Server"   # AKA "IAM Role from the AWS console"
-    instance_tags: "{{ aws_billing_tags | combine({'Name': ec2_instance_pretty_name, 'ansible-host-id': ec2_bastion_fqdn })  }}"
+    instance_tags: "{{ aws_billing_tags | combine({'Name': ec2_instance_pretty_name,
+      'ansible-host-id': ec2_bastion_fqdn,
+      'ansible-group-id': ec2_ansible_group_id })  }}"
     user_data: "{{ lookup('template', ec2_udf_template_path ) }}"
   register: ec2_bastion_result
 
