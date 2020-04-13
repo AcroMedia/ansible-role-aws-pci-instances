@@ -43,3 +43,31 @@
 - debug:
     var: ec2_filenode_result
     verbosity: 1
+
+- name: Get file node volume ID
+  ec2_vol:
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    region: "{{ aws_vpc_region }}"
+    instance: "{{ ec2_filenode_result.tagged_instances[0].id }}"
+    state: list
+  register: filenode_vol_result
+
+- debug:
+    var: filenode_vol_result
+    verbosity: 1
+
+- name: Apply tags to file node volumes
+  ec2_tag:
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    region: "{{ aws_vpc_region }}"
+    resource: "{{ item.id }}"
+    state: present
+    tags: "{{ aws_billing_tags | combine({'Name': ec2_nfs_node_fqdn + ' ' + item.attachment_set.device }) }}"
+  with_items: "{{ filenode_vol_result.volumes }}"
+  register: filenode_vol_tag_result
+
+- debug:
+    var: filenode_vol_tag_result
+    verbosity: 1

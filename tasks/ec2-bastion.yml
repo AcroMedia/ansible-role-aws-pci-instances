@@ -44,6 +44,34 @@
     var: ec2_bastion_result
     verbosity: 1
 
+- name: Get bastion volume ID
+  ec2_vol:
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    region: "{{ aws_vpc_region }}"
+    instance: "{{ ec2_bastion_result.tagged_instances[0].id }}"
+    state: list
+  register: bastion_vol_result
+
+- debug:
+    var: bastion_vol_result
+    verbosity: 1
+
+- name: Apply tags to bastion volumes
+  ec2_tag:
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    region: "{{ aws_vpc_region }}"
+    resource: "{{ item.id }}"
+    state: present
+    tags: "{{ aws_billing_tags | combine({'Name': ec2_bastion_fqdn + ' ' + item.attachment_set.device }) }}"
+  with_items: "{{ bastion_vol_result.volumes }}"
+  register: bastion_vol_tag_result
+
+- debug:
+    var: bastion_vol_tag_result
+    verbosity: 1
+
 - name: Create an Elastic IP for the bastion
   ec2_eip:
     region: "{{ aws_vpc_region }}"
