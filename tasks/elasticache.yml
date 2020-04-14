@@ -13,7 +13,7 @@
     subnets: "{{ aws_vpc_private_subnet_id_list }}"
 
 - name: Configure an elasticache instance
-  elasticache:   #  See https://docs.ansible.com/ansible/latest/modules/elasticache_instance_module.html
+  elasticache:   #  See https://docs.ansible.com/ansible/latest/modules/elasticache_module.html
     aws_access_key: "{{ aws_api_access_key }}"
     aws_secret_key: "{{ aws_api_secret_key }}"
     cache_engine_version: "{{ elasticache_engine_version }}"
@@ -35,4 +35,27 @@
 
 - debug:
     var: elasticache_instance_result
+    verbosity: 1
+
+- name: Get the current caller identity information
+  aws_caller_info:
+  register: _caller_info
+
+- set_fact:
+    elasticache_cluster_arn: "arn:aws:elasticache:{{ aws_vpc_region }}:{{ _caller_info.account }}:cluster:{{ elasticache_cluster_name }}"
+
+- name: Tag elasticache nodes manually because the elasticache module does not yet support tagging
+  command: >
+    aws elasticache add-tags-to-resource
+    --resource-name '{{ elasticache_cluster_arn }}'
+    --tags '{{ aws_billing_tags | dict2items(key_name='Key', value_name='Value')  | to_json }}'
+  environment:
+    AWS_ACCESS_KEY_ID: "{{ aws_api_access_key }}"
+    AWS_SECRET_ACCESS_KEY: "{{ aws_api_secret_key }}"
+    AWS_DEFAULT_REGION: "{{ aws_vpc_region }}"
+  when: (aws_billing_tags | length) > 0
+  register: elasticache_tag_result
+
+- debug:
+    var: elasticache_tag_result
     verbosity: 1
