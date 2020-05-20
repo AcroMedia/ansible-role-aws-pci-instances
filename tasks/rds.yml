@@ -51,7 +51,7 @@
     storage_type: gp2
     tags: "{{ aws_billing_tags }}"
     #timezone: Have we ever used this feature? I've never seen it as an option
-    wait: no
+    wait: "{{ rds_wait }}"
     vpc_security_group_ids:
       - "{{ ec2_group_db_result.group_id }}"
   register: rds_instance_result

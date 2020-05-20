@@ -96,6 +96,7 @@ rds_allocated_storage_gb: 20
 rds_availability_zone: "{{ aws_vpc_region }}a"    # not a typo ...  - arbitrarily setting first zone, as in: ca-central-1a
 rds_multi_az: no
 rds_backup_retention_days: 21
+rds_wait: no
 
 # Elasticache creation
 elasticache_cluster_name: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-cache-by-ansible"
