@@ -93,6 +93,9 @@ rds_engine: mariadb
 rds_engine_version: '10.3'
 rds_instance_class: db.t3.micro
 rds_allocated_storage_gb: 20
+rds_storage_type: gp2 #  or "io1" for provisioned iops.
+rds_iops: 1000        #  ignored unless rds_storage_type == io1
+rds_storage_encrypted: yes
 rds_availability_zone: "{{ aws_vpc_region }}a"    # not a typo ...  - arbitrarily setting first zone, as in: ca-central-1a
 rds_multi_az: no
 rds_backup_retention_days: 21

@@ -47,8 +47,9 @@
     purge_tags: no
     region: "{{ aws_vpc_region }}"
     state: present
-    storage_encrypted: yes
-    storage_type: gp2
+    storage_encrypted: "{{ rds_storage_encrypted }}"
+    storage_type: "{{ rds_storage_type }}"
+    iops: "{{ rds_iops }}"
     tags: "{{ aws_billing_tags }}"
     #timezone: Have we ever used this feature? I've never seen it as an option
     wait: "{{ rds_wait }}"
