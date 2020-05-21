@@ -22,7 +22,7 @@
     aws_access_key: "{{ aws_api_access_key }}"
     aws_secret_key: "{{ aws_api_secret_key }}"
     backup_retention_period: "{{ rds_backup_retention_days }}"
-    character_set_name: "{{ rds_character_set_name }}"
+    # character_set_name: # n/a -- character set name cant be configured at creation time for Mariadb, and possibly others. Better to use "configuration sets" instead.
     copy_tags_to_snapshot: yes
     db_instance_class: "{{ rds_instance_class }}"
     db_name: "{{ rds_db_name }}"
