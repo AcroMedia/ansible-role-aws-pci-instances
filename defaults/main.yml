@@ -100,6 +100,7 @@ rds_availability_zone: "{{ aws_vpc_region }}a"    # not a typo ...  - arbitraril
 rds_multi_az: no
 rds_backup_retention_days: 21
 rds_wait: no
+rds_character_set_name: utf8mb4
 
 # Elasticache creation
 elasticache_cluster_name: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-cache-by-ansible"
