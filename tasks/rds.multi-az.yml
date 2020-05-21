@@ -1,0 +1,45 @@
+---
+- name: Configure a multi-az RDS instance
+  rds_instance:   #  See https://docs.ansible.com/ansible/latest/modules/rds_instance_module.html
+    allocated_storage: "{{ rds_allocated_storage_gb }}"
+    allow_major_version_upgrade: no
+    apply_immediately: no
+    auto_minor_version_upgrade: yes
+    # availability_zone:  #  multi_az and availability_zone are mutually exclusive
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    backup_retention_period: "{{ rds_backup_retention_days }}"
+    # character_set_name: # n/a -- character set name cant be configured at creation time for Mariadb, and possibly others. Better to use "configuration sets" instead.
+    copy_tags_to_snapshot: yes
+    db_instance_class: "{{ rds_instance_class }}"
+    db_name: "{{ rds_db_name }}"
+    db_instance_identifier: "{{ rds_db_instance_identifier }}"
+    db_subnet_group_name: "{{ rds_db_subnet_group_name }}"
+    enable_cloudwatch_logs_exports: []
+    # enable_iam_database_authentication:  @TODO see if we can use this; this sounds great!
+    enable_performance_insights: no
+    engine: "{{ rds_engine }}"
+    engine_version: "{{ rds_engine_version }}"
+    # force_failover: n/a - only used with multi-az. Set to true to conduct the reboot through a MultiAZ failover.
+    force_update_password: no
+    # kms_key_id: n/a - Default AWS-managed key will be used, and auto-created if it doesn't yet exist.
+    master_user_password: "{{ mysql_master_password }}"
+    master_username: "{{ mysql_master_username }}"
+    # max_allocated_storage: n/a - The upper limit to which Amazon RDS can automatically scale the storage of the DB instance.
+    multi_az: yes  #  multi_az and availability_zone are mutually exclusive
+    port: 3306
+    preferred_backup_window: "05:00-07:59"  # in UTC
+    preferred_maintenance_window: "sun:08:00-sun:11:00"  # in UTC
+    publicly_accessible: no
+    purge_tags: no
+    region: "{{ aws_vpc_region }}"
+    state: present
+    storage_encrypted: "{{ rds_storage_encrypted }}"
+    storage_type: "{{ rds_storage_type }}"
+    iops: "{{ rds_iops }}"
+    tags: "{{ aws_billing_tags }}"
+    #timezone: Have we ever used this feature? I've never seen it as an option
+    wait: "{{ rds_wait }}"
+    vpc_security_group_ids:
+      - "{{ ec2_group_db_result.group_id }}"
+  register: rds_instance_result
