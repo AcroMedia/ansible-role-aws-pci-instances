@@ -21,3 +21,19 @@
 - debug:
     var: rds_instance_result
     verbosity: 1
+
+- name: Set the deletion protection parameter via command line, since it is not yet supported by the ansible rds module
+  command: >
+    aws rds modify-db-instance
+    --db-instance-identifier '{{ rds_db_instance_identifier }}'
+    {{ rds_deletion_protection | ternary('--deletion-protection', '--no-deletion-protection') }}
+    --apply-immediately
+  environment:
+    AWS_ACCESS_KEY_ID: "{{ aws_api_access_key }}"
+    AWS_SECRET_ACCESS_KEY: "{{ aws_api_secret_key }}"
+    AWS_DEFAULT_REGION: "{{ aws_vpc_region }}"
+  register: rds_deletion_protection_result
+
+- debug:
+    var: rds_deletion_protection_result
+    verbosity: 1
