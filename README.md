@@ -1,6 +1,12 @@
 # ansible-role-aws-pci-instances
 
-Provision AWS resources to support a PCI compliant HA web application:
+# WARNING: Master is a development branch.
+
+It's ***HIGHLY*** recommended that you pin your galaxy role requirements file to the commit that you took this from, or fork this into your own so you don't import changes you don't want.
+
+## What this does
+
+Provisions AWS resources to support a PCI compliant HA web application:
   - An ssh key pair in AWS so you can provision Ec2 instances (assumes you have ~/.ssh/id_rsa.pub on your local machine)
   - EC2 security groups to enable communication between the various services
   - A bastion host EC2 instance with a public, permanent IP address, since the rest of the systems are on a private network with no public IPs
