@@ -98,7 +98,7 @@ rds_iops: 1000        #  ignored unless rds_storage_type == io1
 rds_storage_encrypted: yes
 rds_availability_zone: "{{ aws_vpc_region }}a"    # not a typo ...  - arbitrarily setting first zone, as in: ca-central-1a
 rds_multi_az: no
-rds_backup_retention_days: 21
+rds_backup_retention_days: 7
 rds_wait: no
 
 # Elasticache creation
