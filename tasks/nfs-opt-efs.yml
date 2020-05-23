@@ -12,6 +12,7 @@
 - set_fact:
     efs_target_list_as_json: '[
       {% for subnet_id in aws_vpc_private_subnet_id_list %}
+      {% if loop.index0 > 0 %},{% endif %}
       {
       "subnet_id": "{{ subnet_id }}",
       "security_groups": ["{{ ec2_file_nodes_security_group_id }}"]
