@@ -96,8 +96,8 @@ rds_allocated_storage_gb: 20
 rds_storage_type: gp2 #  or "io1" for provisioned iops.
 rds_iops: 1000        #  ignored unless rds_storage_type == io1
 rds_storage_encrypted: yes
-rds_availability_zone: "{{ aws_vpc_region }}a"    # not a typo ...  - arbitrarily setting first zone, as in: ca-central-1a
-rds_multi_az: no
+rds_availability_zone: "{{ aws_vpc_region }}a"    # not a typo ...  - arbitrarily setting first zone, as in: ca-central-1a. Only used if rds_az_mode == single
+rds_az_mode: single   # Can be "multi" or "single", as in "multi az" or "single az". If multi, then rds_availability_zone is ignored.
 rds_backup_retention_days: 7
 rds_wait: no
 rds_deletion_protection: no

@@ -12,13 +12,10 @@
     state: present
     subnets: "{{ private_subnet_result['results'] | map(attribute='subnet') | map(attribute='id') | list }}"
 
-- import_tasks: ./rds.multi-az.yml
-  when: rds_multi_az == true
+- include_tasks: ./rds.{{ rds_az_mode }}-az.yml
 
-- import_tasks: ./rds.single-az.yml
-  when: rds_multi_az == false
-
-- debug:
+- name: show value for rds_instance_result
+  debug:
     var: rds_instance_result
     verbosity: 1
 
