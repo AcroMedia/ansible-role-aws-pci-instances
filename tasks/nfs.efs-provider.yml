@@ -39,5 +39,11 @@
     var: efs_result
     verbosity: 1
 
-- set_fact:
-    efs_endpoint:
+- name: Set nfs_endpoint variable
+  set_fact:
+    efs_address: "{{ efs_result.efs.filesystem_address }}"
+    nfs_endpoint: "{{ efs_result.efs.filesystem_address.split(':')[0] }}"
+
+- debug:
+    var: nfs_endpoint
+    verbosity: 1

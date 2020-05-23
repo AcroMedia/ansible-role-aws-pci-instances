@@ -40,6 +40,14 @@
     var: ec2_filenode_result
     verbosity: 1
 
+- name: set nfs_endpoint variable
+  set_fact:
+    nfs_endpoint: "{{ ec2_filenode_result.tagged_instances[0].private_ip }}"
+
+- debug:
+    var: nfs_endpoint
+    verbosity: 1
+
 - name: Get file node volume ID
   ec2_vol:
     aws_access_key: "{{ aws_api_access_key }}"
