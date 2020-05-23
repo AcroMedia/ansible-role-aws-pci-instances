@@ -14,8 +14,4 @@
 
 # See https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/WhatIs.Terms.html
 
-- import_tasks: ./elasticache.multi-az.yml
-  when: elasticache_multi_az == true
-
-- import_tasks: ./elasticache.single-az.yml
-  when: elasticache_multi_az == false
+- include_tasks: ./elasticache.{{ elasticache_az_mode }}-az.yml

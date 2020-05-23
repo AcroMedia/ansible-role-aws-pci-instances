@@ -104,15 +104,15 @@ rds_deletion_protection: no
 
 # Elasticache creation
 # See https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/WhatIs.Terms.html
-elasticache_multi_az: no
 elasticache_cluster_name: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-cache-by-ansible"
 elasticache_engine: redis
 elasticache_engine_version: '5.0.6'
 elasticache_port: 6379
 elasticache_instance_type: cache.t3.micro
-elasticache_num_nodes: 3
+elasticache_num_nodes: 3   # only applies when elasticache_availability_mode == multi. If elasticache_availability_mode == single, then this is always treated as 1.
 elasticache_state: present     # present / absent / rebooted
 elasticache_availability_zone: "{{ aws_vpc_region }}a"    # not a typo ...  aka ca-central-1a
+elasticache_az_mode: single   # as in "multi" az or "single" az. If multi, then elasticache_availability_zone is ignored.
 
 # ELB creation
 elb_listener_ssl_cert_arn: 'You_need_to_set_This_up_before_running_the_role' # e.g:  arn:aws:acm:us-east-1:123456789:certificate/a0a0a00-a00a0a0a0-a00a0a0a
