@@ -24,6 +24,14 @@
     var: elasticache_instance_result
     verbosity: 1
 
+- name: Set redis_endpoint variable
+  set_fact:
+    redis_endpoint: "{{ elasticache_instance_result.elasticache.data.CacheNodes[0].Endpoint.Address  }}"
+
+- debug:
+    var: redis_endpoint
+    verbosity: 1
+
 - name: Get the current caller identity information
   aws_caller_info:
     aws_access_key: "{{ aws_api_access_key }}"

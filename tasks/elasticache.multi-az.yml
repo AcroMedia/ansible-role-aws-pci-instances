@@ -25,13 +25,48 @@
     var: elasticache_instance_result
     verbosity: 1
 
-- name: Get the current caller identity information
+## GET REDIS ENDPOINT ...
+
+- name: Look up replication_group_data info (since it doesn't exist in elasticache_info) so we can find the redis endpoint
+  command: >
+    aws elasticache describe-replication-groups
+    --replication-group-id {{ elasticache_cluster_name }}
+  environment:
+    AWS_ACCESS_KEY_ID: "{{ aws_api_access_key }}"
+    AWS_SECRET_ACCESS_KEY: "{{ aws_api_secret_key }}"
+    AWS_DEFAULT_REGION: "{{ aws_vpc_region }}"
+  register: describe_replication_groups_result
+
+- debug:
+    var: describe_replication_groups_result
+    verbosity: 1
+
+- name: Convert replication_group_data to a more useful format
+  set_fact:
+    replication_group_data: "{{ describe_replication_groups_result.stdout | from_json }}"
+
+- debug:
+    var: replication_group_data
+    verbosity: 1
+
+- name: Set redis_endpoint variable
+  set_fact:
+    redis_endpoint: '{{ replication_group_data.ReplicationGroups[0].NodeGroups[0].PrimaryEndpoint.Address }}'
+
+- debug:
+    var: redis_endpoint
+    verbosity: 1
+
+
+### TAG RESOURCES ....
+
+- name: Get the current caller identity information so we can tag resources
   aws_caller_info:
     aws_access_key: "{{ aws_api_access_key }}"
     aws_secret_key: "{{ aws_api_secret_key }}"
   register: _caller_info
 
-- name: obtain all Elasticache information
+- name: Get elasticache cluster info so we can tag resources
   elasticache_info:
     aws_access_key: "{{ aws_api_access_key }}"
     aws_secret_key: "{{ aws_api_secret_key }}"
@@ -42,7 +77,8 @@
     var: elasticache_info_result
     verbosity: 1
 
-- set_fact:
+- name: Look up cluster node ARNs
+  set_fact:
     elasticache_cluster_arns: '[
       {% for clust in elasticache_info_result.elasticache_clusters %}
       {% if (loop.index0 > 0) %}
