@@ -4,7 +4,7 @@
 - import_tasks: ./ec2-bastion.yml
 - import_tasks: ./rds.yml
 - import_tasks: ./elasticache.yml
-- include_tasks: ./nfs-opt-{{ nfs_provider }}.yml
+- import_tasks: ./nfs.yml
 - import_tasks: ./ec2-app-nodes.yml
 - import_tasks: ./ec2-elk.yml
   when: ec2_elk_node == true

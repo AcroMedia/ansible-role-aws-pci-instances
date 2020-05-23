@@ -1,9 +1,5 @@
 ---
 - set_fact:
-    ec2_instance_pretty_name: "{{ aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' NFS ' + aws_resource_name_suffix | trim }}"
-    ec2_ansible_group_id: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-nfs" # this controls how many instances are launched
-
-- set_fact:
     ec2_instance_hostname_base: "{{ ec2_nfs_node_hostname_short }}"  #  For the benefit of the UDF template
     ec2_instance_fqdn: "{{ ec2_nfs_node_fqdn }}"  #  The UDF template needs to know ec2_instance_fqdn
 
