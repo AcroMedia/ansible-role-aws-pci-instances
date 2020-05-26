@@ -42,11 +42,6 @@
     var: elasticache_replication_group_result
     verbosity: 1
 
-- fail:
-    msg: stop
-  when: true
-
-
 ## GET REDIS ENDPOINT ...
 
 - name: Look up replication_group_data info (since it doesn't exist in elasticache_info) so we can find the redis endpoint
