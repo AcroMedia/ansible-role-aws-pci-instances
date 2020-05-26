@@ -54,7 +54,8 @@
     AWS_DEFAULT_REGION: "{{ aws_vpc_region }}"
   register: describe_replication_groups_result
 
-- debug:
+- name: Show describe_replication_groups_result
+  debug:
     var: describe_replication_groups_result
     verbosity: 1
 
@@ -62,7 +63,8 @@
   set_fact:
     replication_group_data: "{{ describe_replication_groups_result.stdout | from_json }}"
 
-- debug:
+- name: Show replication_group_data
+  debug:
     var: replication_group_data
     verbosity: 1
 
