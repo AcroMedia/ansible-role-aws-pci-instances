@@ -1,6 +1,6 @@
 ---
 - set_fact:
-    elasticache_subnet_group_name: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-cache-subnet-group-by-ansible"
+    elasticache_subnet_group_name: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-cache-subnet-group"
 
 - name: Configure the elasticache subnet group
   elasticache_subnet_group:

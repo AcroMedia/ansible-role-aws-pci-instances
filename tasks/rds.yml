@@ -1,6 +1,6 @@
 ---
 - set_fact:
-    rds_db_subnet_group_name: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-db-subnet-group-by-ansible"
+    rds_db_subnet_group_name: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-db-subnet-group"
 
 - name: Configure the RDS DB subnet group
   rds_subnet_group:
