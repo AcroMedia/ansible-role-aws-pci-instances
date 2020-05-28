@@ -68,7 +68,7 @@
     var: replication_group_data
     verbosity: 1
 
-- name: Set redis_endpoint variable
+- name: Set redis_endpoint variable. If this fails on the first attempt, give the replication group a few minutes to finish provisioning before retrying
   set_fact:
     redis_endpoint: '{{ replication_group_data.ReplicationGroups[0].NodeGroups[0].PrimaryEndpoint.Address }}'
 
