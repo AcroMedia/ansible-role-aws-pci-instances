@@ -46,7 +46,7 @@ function main () {
     # Remove default generic user we don't need them any more.
     userdel --remove ubuntu  || userdel --remove centos
 
-{% if '-app' in ec2_instance_fqdn %}
+{% if '-app' in ec2_instance_hostname_base %}
     # App nodes get NGINX installed off the bat, so they can be "healthy" by default when the get attached to the load balancer
     (apt-add-repository --yes --update ppa:nginx/stable && apt-get -yqq install nginx) || yum -y install nginx
 {% endif %}

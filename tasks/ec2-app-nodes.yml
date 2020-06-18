@@ -1,13 +1,26 @@
 ---
 - set_fact:
-    ec2_instance_pretty_name: "{{ aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' app ' + aws_resource_name_suffix | trim }}"
-    ec2_ansible_group_id: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-app" # this controls how many instances are launched
+    ec2_ansible_group_id: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-app" # this controls how many instances are launched per subnet
+    ec2_instance_pretty_name: "{{ aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' app ' + aws_resource_name_suffix | trim }}"    # sets the Name tag in the AWS UX.
+    ec2_instance_hostname_base: "{{ ec2_app_node_hostname_short }}"  #  For the benefit of the UDF template; the Instance ID will be appended to it, and FQDN constructed from that.
 
-- set_fact:
-    ec2_instance_hostname_base: "{{ ec2_app_node_hostname_short }}"  #  For the benefit of the UDF template
-    ec2_instance_fqdn: "{{ ec2_app_node_fqdn }}"  #  For the benefit of the UDF template
+- name: Set facts for app nodes when they reside in private subnets
+  set_fact:
+    _app_node_assign_public_ip: no    # only used in the ec2 create task below.
+    _app_node_subnet_id_list: "{{ aws_vpc_private_subnet_id_list }}"       # only used in the ec2 create task below.
+    _app_node_ansible_host_id: "{{ ec2_app_node_hostname_short }}"       # only used in the ec2 create task below.
+  when: aws_vpc_private_subnets is not string
+    and (aws_vpc_private_subnets | length) > 0
 
-- name: "Create {{ ec2_app_node_count_per_subnet }} app node(s) per private subnet"
+- name: Set facts for app nodes when they reside in public subnets
+  set_fact:
+    _app_node_assign_public_ip: yes      # only used in the ec2 create task below.
+    _app_node_subnet_id_list: "{{ aws_vpc_public_subnet_id_list }}"      # only used in the ec2 create task below.
+    _app_node_ansible_host_id: "{{ ec2_app_node_hostname_short }}.{{ route53_hosted_domain }}"     # only used in the ec2 create task below.
+  when: aws_vpc_private_subnets is not string
+    and (aws_vpc_private_subnets | length) == 0
+
+- name: "Create {{ ec2_app_node_count_per_subnet }} app node(s) per subnet"
   ec2:
     key_name: "{{ aws_ssh_keypair_name }}"
     region: "{{ aws_vpc_region }}"
@@ -25,7 +38,7 @@
         volume_size: "{{ ec2_app_node_volume_size_gb }}"
         delete_on_termination: true
     vpc_subnet_id: "{{ item }}"
-    assign_public_ip: no
+    assign_public_ip: "{{ _app_node_assign_public_ip }}"
     #count: 1            # parameters (exact_count|count) are mutually exclusive.
     #state: present      # parameters (exact_count|state) are mutually exclusive.
     count_tag:
@@ -35,10 +48,10 @@
     ebs_optimized: yes
     #instance_profile_name: "Server"   # AKA "IAM Role from the AWS console"
     instance_tags: "{{ aws_billing_tags | combine({'Name': ec2_instance_pretty_name,
-      'ansible-host-id': ec2_app_node_fqdn,
+      'ansible-host-id': _app_node_ansible_host_id,
       'ansible-group-id': ec2_ansible_group_id })  }}"
     user_data: "{{ lookup('template', ec2_udf_template_path ) }}"
-  loop: "{{ aws_vpc_private_subnet_id_list }}"
+  loop: "{{ _app_node_subnet_id_list }}"
   register: ec2_appnode_result
 
 - debug:
@@ -89,3 +102,29 @@
 - debug:
     var: appnode_vol_tag_result
     verbosity: 1
+
+- name: Make ansible host IDs on app nodes line up with their instance ids - PRIVATE
+  ec2_tag:
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    region: "{{ aws_vpc_region }}"
+    resource: "{{ item }}"
+    state: present
+    tags:
+      ansible-host-id: "{{ ec2_app_node_hostname_short }}-{{  item }}"
+  with_items: "{{ ec2_app_node_instance_ids }}"
+  when: aws_vpc_private_subnets is not string
+    and (aws_vpc_private_subnets | length) > 0
+
+- name: Make ansible host IDs on app nodes line up with their instance ids - PUBLIC
+  ec2_tag:
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    region: "{{ aws_vpc_region }}"
+    resource: "{{ item }}"
+    state: present
+    tags:
+      ansible-host-id: "{{ ec2_app_node_hostname_short }}-{{  item }}.{{ route53_hosted_domain }}"
+  with_items: "{{ ec2_app_node_instance_ids }}"
+  when: aws_vpc_private_subnets is not string
+    and (aws_vpc_private_subnets | length) == 0

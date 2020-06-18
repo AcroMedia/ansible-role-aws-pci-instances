@@ -1,6 +1,20 @@
 ---
+# @TODO: Trim doesn't seem to work when aws_resource_name_suffix is blank, causing ansible to fail with duplicate groups error
 - set_fact:
-    ec2_group_name_bastions: "{{ aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' bastions ' + aws_resource_name_suffix | trim }}"
+    ec2_group_name_bastions: "{{ (aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' bastions ' + aws_resource_name_suffix) | trim }}"
+
+- debug:
+    var: ec2_group_name_bastions
+    verbosity: 1
+
+- set_fact:
+    ec2_group_name_bastions: "{{ ec2_group_name_bastions | trim }}"
+
+- debug:
+    var: ec2_group_name_bastions
+    verbosity: 1
+
+
 - name: Create a security group for the bastion host
   ec2_group:
     name: "{{ ec2_group_name_bastions }}"

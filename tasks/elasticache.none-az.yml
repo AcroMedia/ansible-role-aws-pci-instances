@@ -1,0 +1,2 @@
+---
+# This is a no-op that skips elasticache creation when Elasticache is not needed.

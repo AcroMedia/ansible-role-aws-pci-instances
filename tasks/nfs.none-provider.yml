@@ -1,0 +1,2 @@
+---
+# This playbook is a no-op that skips NFS creation when NFS is not needed.

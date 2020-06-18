@@ -1,11 +1,24 @@
 ---
 - import_tasks: ./ec2-ssh-keypair.yml
+
 - import_tasks: ./ec2-security-groups.yml
+
 - import_tasks: ./ec2-bastion.yml
+
 - import_tasks: ./rds.yml
+  when: aws_vpc_private_subnets is not string
+      and (aws_vpc_private_subnets | length) > 1
+
 - import_tasks: ./elasticache.yml
+  when: elasticache_az_mode != 'none'
+
 - import_tasks: ./nfs.yml
+
 - import_tasks: ./ec2-app-nodes.yml
-- import_tasks: ./ec2-elk.yml
+
+- include_tasks: ./ec2-elk.yml
   when: ec2_elk_node == true
-- import_tasks: ./ec2-elb.yml
+
+- include_tasks: ./ec2-elb.yml
+  when: aws_vpc_public_subnets is not string
+    and (aws_vpc_public_subnets | length) > 1
