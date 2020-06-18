@@ -53,6 +53,11 @@ ec2_bastion_ami: "{{ ec2_defautlt_ami }}"
 ec2_bastion_volume_size_gb: 8
 ec2_bastion_hostname_short: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-bastion"
 ec2_bastion_fqdn: "{{ ec2_bastion_hostname_short }}.{{ route53_hosted_domain.lower() }}"
+ec2_sg_rules_bastion:
+  - proto: tcp
+    from_port: 22
+    to_port: 22
+    cidr_ip: 0.0.0.0/0
 
 # NFS (File server) node / cluster creation
 nfs_provider: ec2 # Can be 'efs' or 'ec2'
@@ -69,6 +74,7 @@ efs_name: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() 
 efs_throughput_mode: bursting
 efs_wait: no  # do we wait until service is provisioned before continuing with the rest of the tasks?
 efs_wait_timeout: 600 # in seconds
+ec2_sg_rules_nfs_extra: []  # Default security group rules allow connections from other generated group IDs, not specific addresses, so we provide additions instead of overrides.
 
 # App node creation
 ec2_app_node_count_per_subnet: 1
@@ -77,6 +83,7 @@ ec2_app_node_ami: "{{ ec2_defautlt_ami }}"
 ec2_app_node_volume_size_gb: 20
 ec2_app_node_hostname_short: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-app"
 ec2_app_node_fqdn: "{{ ec2_app_node_hostname_short }}"
+ec2_sg_rules_app_extra: []  # Default security group rules allow connections from other generated group IDs, not specific addresses, so we provide additions instead of overrides.
 
 # ELK stack: Kibana front end, elastic search + log stash ... all in one for now.
 ec2_elk_node: false
@@ -85,6 +92,7 @@ ec2_elk_node_ami: "{{ ec2_defautlt_ami }}"
 ec2_elk_node_volume_size_gb: 20
 ec2_elk_node_hostname_short: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-elk"
 ec2_elk_node_fqdn: "{{ ec2_elk_node_hostname_short }}.{{ route53_hosted_domain.lower() }}"
+ec2_sg_rules_elk_extra: []
 
 # RDS instance creation
 aws_database_provider: rds   # can be `rds` or `none`. RDS Requires at least 2 subnets.
@@ -102,6 +110,7 @@ rds_az_mode: single   # Can be "multi" or "single", as in "multi az" or "single 
 rds_backup_retention_days: 7
 rds_wait: no
 rds_deletion_protection: no
+ec2_sg_rules_db_extra: []  # Default security group rules allow connections from other generated group IDs, not specific addresses, so we provide additions instead of overrides.
 
 # Elasticache creation
 # See https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/WhatIs.Terms.html
@@ -114,9 +123,19 @@ elasticache_instance_type: cache.t3.micro
 elasticache_num_nodes: 3   # only applies when elasticache_availability_mode == multi. If elasticache_availability_mode == single, then this is always treated as 1.
 elasticache_state: present     # present / absent / rebooted
 elasticache_availability_zone: "{{ aws_vpc_region }}a"    # not a typo ...  aka ca-central-1a
+ec2_sg_rules_cache_extra: []
 
 # ELB creation
 aws_load_balancer_provider: elb  # can be `elb` or `none`
 elb_listener_ssl_cert_arn: 'You_need_to_set_This_up_before_running_the_role' # e.g:  arn:aws:acm:us-east-1:123456789:certificate/a0a0a00-a00a0a0a0-a00a0a0a
 elb_fqdn: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-lb.{{ route53_hosted_domain }}"
 elb_dns_entry_overwrite: false
+ec2_sg_rules_lb:
+  - proto: tcp
+    from_port: 80
+    to_port: 80
+    cidr_ip: 0.0.0.0/0
+  - proto: tcp
+    from_port: 443
+    to_port: 443
+    cidr_ip: 0.0.0.0/0

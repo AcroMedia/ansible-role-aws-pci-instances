@@ -101,7 +101,7 @@
     var: appnode_vol_tag_result
     verbosity: 1
 
-- name: Make ansible host IDs on app nodes line up with their instance ids - PRIVATE
+- name: Make ansible host ID tags on app nodes match what we've set for internal hostnames, for easier identification and monitoring
   ec2_tag:
     aws_access_key: "{{ aws_api_access_key }}"
     aws_secret_key: "{{ aws_api_secret_key }}"
@@ -111,18 +111,3 @@
     tags:
       ansible-host-id: "{{ ec2_app_node_hostname_short }}-{{  item }}"
   with_items: "{{ ec2_app_node_instance_ids }}"
-  when: aws_vpc_private_subnets is not string
-    and (aws_vpc_private_subnets | length) > 0
-
-- name: Make ansible host IDs on app nodes line up with their instance ids - PUBLIC
-  ec2_tag:
-    aws_access_key: "{{ aws_api_access_key }}"
-    aws_secret_key: "{{ aws_api_secret_key }}"
-    region: "{{ aws_vpc_region }}"
-    resource: "{{ item }}"
-    state: present
-    tags:
-      ansible-host-id: "{{ ec2_app_node_hostname_short }}-{{  item }}.{{ route53_hosted_domain }}"
-  with_items: "{{ ec2_app_node_instance_ids }}"
-  when: aws_vpc_private_subnets is not string
-    and (aws_vpc_private_subnets | length) == 0
