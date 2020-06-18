@@ -1,0 +1,2 @@
+---
+- import_tasks: ./database.{{ aws_database_provider }}.yml

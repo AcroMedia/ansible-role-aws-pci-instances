@@ -2,6 +2,18 @@
 - set_fact:
     rds_db_subnet_group_name: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-db-subnet-group"
 
+- name: Set RDS facts when private subnets are available
+  set_fact:
+    _rds_subnet_list: "{{ private_subnet_result['results'] | map(attribute='subnet') | map(attribute='id') | list }}"
+  when: aws_vpc_private_subnets is not string
+    and (aws_vpc_private_subnets | length) > 0
+
+- name: Set RDS facts when private subnets are not available
+  set_fact:
+    _rds_subnet_list: "{{ public_subnet_result['results'] | map(attribute='subnet') | map(attribute='id') | list }}"
+  when: aws_vpc_private_subnets is not string
+    and (aws_vpc_private_subnets | length) == 0
+
 - name: Configure the RDS DB subnet group
   rds_subnet_group:
     aws_access_key: "{{ aws_api_access_key }}"
@@ -10,7 +22,7 @@
     name: "{{ rds_db_subnet_group_name }}"
     region: "{{ aws_vpc_region }}"
     state: present
-    subnets: "{{ private_subnet_result['results'] | map(attribute='subnet') | map(attribute='id') | list }}"
+    subnets: "{{ _rds_subnet_list }}"
 
 - include_tasks: ./rds.{{ rds_az_mode }}-az.yml
 

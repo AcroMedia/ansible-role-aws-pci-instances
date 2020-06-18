@@ -1,0 +1,2 @@
+---
+# This playbook acts as a no-op when RDS is not needed.  

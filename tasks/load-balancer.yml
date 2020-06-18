@@ -1,0 +1,4 @@
+---
+- include_tasks: ./load-balancer.{{ aws_load_balancer_provider }}.yml
+  when: aws_vpc_public_subnets is not string
+    and (aws_vpc_public_subnets | length) > 1

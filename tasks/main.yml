@@ -5,9 +5,7 @@
 
 - import_tasks: ./ec2-bastion.yml
 
-- import_tasks: ./rds.yml
-  when: aws_vpc_private_subnets is not string
-      and (aws_vpc_private_subnets | length) > 1
+- import_tasks: ./database.yml
 
 - import_tasks: ./elasticache.yml
   when: elasticache_az_mode != 'none'
@@ -19,6 +17,4 @@
 - include_tasks: ./ec2-elk.yml
   when: ec2_elk_node == true
 
-- include_tasks: ./ec2-elb.yml
-  when: aws_vpc_public_subnets is not string
-    and (aws_vpc_public_subnets | length) > 1
+- import_tasks: ./load-balancer.yml

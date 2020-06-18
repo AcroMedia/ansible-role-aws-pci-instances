@@ -1,0 +1,2 @@
+---
+# This playbook is a no-op when load balancer is not required.
