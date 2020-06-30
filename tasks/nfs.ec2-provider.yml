@@ -1,7 +1,22 @@
 ---
-- set_fact:
+- name: Set NFS facts for EC2 creation
+  set_fact:
     ec2_instance_hostname_base: "{{ ec2_nfs_node_hostname_short }}"  #  For the benefit of the UDF template
     ec2_instance_fqdn: "{{ ec2_nfs_node_fqdn }}"  #  The UDF template needs to know ec2_instance_fqdn
+
+- name: Set NFS EC2 facts when private subnets are available
+  set_fact:
+    _nfs_ec2_subnet_id: "{{ aws_vpc_private_subnet_id_list[0] }}" # arbitrarily choose the first private subnet id
+    _nfs_ec2_assign_public_ip: no
+  when: aws_vpc_private_subnets is not string
+    and (aws_vpc_private_subnets | length) > 0
+
+- name: Set NFS EC2 facts when private subnets are not available
+  set_fact:
+    _nfs_ec2_subnet_id: "{{ aws_vpc_public_subnet_id_list[0] }}"  # arbitrarily choose the first public subnet id
+    _nfs_ec2_assign_public_ip: yes
+  when: aws_vpc_private_subnets is not string
+    and (aws_vpc_private_subnets | length) == 0
 
 - name: Create a NFS node on the private subnet
   ec2:
@@ -20,8 +35,8 @@
         volume_type: "{{ ec2_default_volume_type }}"
         volume_size: "{{ ec2_nfs_node_volume_size_gb }}"
         delete_on_termination: true
-    vpc_subnet_id: "{{ aws_vpc_private_subnet_id_list[0] }}" # Theres' only one file node, it can just be on the first private subnet.
-    assign_public_ip: no
+    vpc_subnet_id: "{{ _nfs_ec2_subnet_id }}"
+    assign_public_ip: "{{ _nfs_ec2_assign_public_ip }}"
     #count: 1            # parameters (exact_count|count) are mutually exclusive.
     #state: present      # parameters (exact_count|state) are mutually exclusive.
     count_tag:
