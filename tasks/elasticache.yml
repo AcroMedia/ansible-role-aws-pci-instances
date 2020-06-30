@@ -2,6 +2,18 @@
 - set_fact:
     elasticache_subnet_group_name: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-cache-subnet-group"
 
+- name: Set elasticache facts when private subnets are available
+  set_fact:
+    _elasticache_subnet_list: "{{ private_subnet_result['results'] | map(attribute='subnet') | map(attribute='id') | list }}"
+  when: aws_vpc_private_subnets is not string
+    and (aws_vpc_private_subnets | length) > 0
+
+- name: Set elasticache facts when private subnets are not available
+  set_fact:
+    _elasticache_subnet_list: "{{ public_subnet_result['results'] | map(attribute='subnet') | map(attribute='id') | list }}"
+  when: aws_vpc_private_subnets is not string
+    and (aws_vpc_private_subnets | length) == 0
+
 - name: Configure the elasticache subnet group
   elasticache_subnet_group:
     aws_access_key: "{{ aws_api_access_key }}"
@@ -10,7 +22,9 @@
     name: "{{ elasticache_subnet_group_name }}"
     region: "{{ aws_vpc_region }}"
     state: present
-    subnets: "{{ aws_vpc_private_subnet_id_list }}"
+    subnets: "{{ _elasticache_subnet_list }}"
+  when: elasticache_az_mode == 'multi'
+    or elasticache_az_mode == 'single'
 
 # See https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/WhatIs.Terms.html
 

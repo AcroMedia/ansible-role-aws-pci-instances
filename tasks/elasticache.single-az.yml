@@ -16,7 +16,7 @@
     state: "{{ elasticache_state }}"
     security_group_ids:
       - "{{ ec2_cache_nodes_security_group_id }}"
-    wait: no
+    wait: "{{ elasticache_wait }}"
     zone: "{{ elasticache_availability_zone }}"
   register: elasticache_instance_result
 

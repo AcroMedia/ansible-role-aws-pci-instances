@@ -108,7 +108,7 @@ rds_storage_encrypted: yes
 rds_availability_zone: "{{ aws_vpc_region }}a"    # not a typo ...  - arbitrarily setting first zone, as in: ca-central-1a. Only used if rds_az_mode == single
 rds_az_mode: single   # Can be "multi" or "single", as in "multi az" or "single az". If multi, then rds_availability_zone is ignored.
 rds_backup_retention_days: 7
-rds_wait: no
+rds_wait: no      # The role almost always fails trying to read the instance data upon first creation. Its faster to just re-run the playbook than to wait for creation to fully complete.
 rds_deletion_protection: no
 ec2_sg_rules_db_extra: []  # Default security group rules allow connections from other generated group IDs, not specific addresses, so we provide additions instead of overrides.
 
@@ -123,6 +123,7 @@ elasticache_instance_type: cache.t3.micro
 elasticache_num_nodes: 3   # only applies when elasticache_availability_mode == multi. If elasticache_availability_mode == single, then this is always treated as 1.
 elasticache_state: present     # present / absent / rebooted
 elasticache_availability_zone: "{{ aws_vpc_region }}a"    # not a typo ...  aka ca-central-1a
+elasticache_wait: no   # The role almost always fails trying to read the instance data upon first creation. Its faster to just re-run the playbook than to wait for creation to fully complete.
 ec2_sg_rules_cache_extra: []
 
 # ELB creation
