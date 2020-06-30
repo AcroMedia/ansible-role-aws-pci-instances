@@ -1,5 +1,6 @@
 ---
-- set_fact:
+- name: Create EFS tags list
+  set_fact:
     efs_tags: "{{
       aws_billing_tags | combine({
         'Name': efs_name,
@@ -7,9 +8,22 @@
         })
       }}"
 
-- set_fact:
+- name: Set EFS facts when private subnets are available
+  set_fact:
+    _efs_subnet_id_list: "{{ private_subnet_result['results'] | map(attribute='subnet') | map(attribute='id') | list }}"
+  when: aws_vpc_private_subnets is not string
+    and (aws_vpc_private_subnets | length) > 0
+
+- name: Set EFS facts when private subnets are not available
+  set_fact:
+    _efs_subnet_id_list: "{{ public_subnet_result['results'] | map(attribute='subnet') | map(attribute='id') | list }}"
+  when: aws_vpc_private_subnets is not string
+    and (aws_vpc_private_subnets | length) == 0
+
+- name: Build EFS target list as json string
+  set_fact:
     efs_target_list_as_json: '[
-      {% for subnet_id in aws_vpc_private_subnet_id_list %}
+      {% for subnet_id in _efs_subnet_id_list %}
       {% if loop.index0 > 0 %},{% endif %}
       {
       "subnet_id": "{{ subnet_id }}",
@@ -18,7 +32,7 @@
       {% endfor %}
       ]'
 
-- name: Create an elastic file system (EFS) with one mount point per private subnet
+- name: Create an elastic file system (EFS) with one mount point per subnet
   efs:
     state: present
     region: "{{ aws_vpc_region }}"
