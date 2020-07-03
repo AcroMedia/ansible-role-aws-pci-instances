@@ -58,6 +58,8 @@ ec2_sg_rules_bastion:
     from_port: 22
     to_port: 22
     cidr_ip: 0.0.0.0/0
+ec2_bastion_iam_role_name: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-bastion"
+
 
 # NFS (File server) node / cluster creation
 nfs_provider: ec2 # Can be 'efs' or 'ec2'
@@ -67,6 +69,7 @@ ec2_nfs_node_ami: "{{ ec2_defautlt_ami }}"
 ec2_nfs_node_volume_size_gb: 20
 ec2_nfs_node_hostname_short: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-nfs"
 ec2_nfs_node_fqdn: "{{ ec2_nfs_node_hostname_short }}"
+ec2_nfs_node_iam_role_name: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-nfs-node"
 # efs_** vars only apply when nfs_provider == efs
 efs_encrypt: no
 efs_performance_mode: general_purpose  # or max_io
@@ -84,6 +87,7 @@ ec2_app_node_volume_size_gb: 20
 ec2_app_node_hostname_short: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-app"
 ec2_app_node_fqdn: "{{ ec2_app_node_hostname_short }}"
 ec2_sg_rules_app_extra: []  # Default security group rules allow connections from other generated group IDs, not specific addresses, so we provide additions instead of overrides.
+ec2_app_node_iam_role_name: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-app-node"
 
 # ELK stack: Kibana front end, elastic search + log stash ... all in one for now.
 ec2_elk_node: false
@@ -93,6 +97,7 @@ ec2_elk_node_volume_size_gb: 20
 ec2_elk_node_hostname_short: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-elk"
 ec2_elk_node_fqdn: "{{ ec2_elk_node_hostname_short }}.{{ route53_hosted_domain.lower() }}"
 ec2_sg_rules_elk_extra: []
+ec2_elk_node_iam_role_name: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-elk-node"
 
 # RDS instance creation
 aws_database_provider: rds   # can be `rds` or `none`. RDS Requires at least 2 subnets.

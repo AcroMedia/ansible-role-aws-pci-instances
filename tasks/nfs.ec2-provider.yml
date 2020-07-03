@@ -18,7 +18,17 @@
   when: aws_vpc_private_subnets is not string
     and (aws_vpc_private_subnets | length) == 0
 
-- name: Create a NFS node on the private subnet
+- name: Create an IAM role to use with our NFS node, so we can attach IAM policies to it.
+  iam:
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    region: "{{ aws_vpc_region }}"
+    iam_type: role
+    name: "{{ ec2_nfs_node_iam_role_name }}"
+    state: present
+  register: ec2_nfs_node_iam_role_result
+
+- name: Create an EC2 NFS node
   ec2:
     key_name: "{{ aws_ssh_keypair_name }}"
     region: "{{ aws_vpc_region }}"
@@ -44,7 +54,7 @@
     exact_count: 1
     termination_protection: true
     ebs_optimized: yes
-    #instance_profile_name: "Server"   # AKA "IAM Role from the AWS console"
+    instance_profile_name: "{{ ec2_nfs_node_iam_role_name }}"
     instance_tags: "{{ aws_billing_tags | combine({'Name': ec2_instance_pretty_name,
       'ansible-host-id': ec2_nfs_node_fqdn,
       'ansible-group-id': ec2_ansible_group_id })  }}"
