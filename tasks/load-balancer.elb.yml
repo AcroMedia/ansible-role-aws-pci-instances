@@ -1,8 +1,5 @@
 ---
 - set_fact:
-      elb_target_group_name: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-tgtGrp"
-
-- set_fact:
     elb_target_list_as_json: '[
       {% for result in ec2_appnode_result.results %}
       {% set outer_loop = loop %}
@@ -18,26 +15,26 @@
     aws_access_key: "{{ aws_api_access_key }}"
     aws_secret_key: "{{ aws_api_secret_key }}"
     # health_check_interval: 10
-    # health_check_path: /
+    health_check_path: "{{ elb_target_group_health_check_path }}"
     # health_check_port: 80
     # health_check_protocol: http
     # health_check_timeout: 5
-    # healthy_threshold_count: 2
+    healthy_threshold_count: "{{ elb_target_group_healthy_threshold_count }}"
     modify_targets: yes # Whether or not to alter existing targets in the group to match what is passed with the module
     name: "{{ elb_target_group_name }}"
-    port: 80
-    protocol: http
+    port: "{{ elb_target_group_port }}"
+    protocol: "{{ elb_target_group_protocol }}"
     purge_tags: no
     region: "{{ aws_vpc_region }}"
     state: present
     stickiness_enabled: no
     #stickiness_lb_cookie_duration: 3600
     #stickiness_type: lb_cookie
-    successful_response_codes: "200-299,300-399"
+    successful_response_codes: "{{ elb_target_group_success_codes }}"
     tags: "{{ aws_billing_tags }}"
     target_type: instance
     targets: "{{ elb_target_list_as_json }}"
-    #unhealthy_threshold_count: 10
+    unhealthy_threshold_count: "{{ elb_target_group_unhealthy_threshold_count }}"
     vpc_id: "{{ vpc_result.vpc.id }}"
     wait: no
     #wait_timeout: 180

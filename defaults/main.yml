@@ -133,6 +133,13 @@ ec2_sg_rules_cache_extra: []
 
 # ELB creation
 aws_load_balancer_provider: elb  # can be `elb` or `none`
+elb_target_group_name: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-tgtGrp"
+elb_target_group_port: 80
+elb_target_group_protocol: http
+elb_target_group_success_codes: "200,302"
+elb_target_group_healthy_threshold_count: 5
+elb_target_group_unhealthy_threshold_count: 2
+elb_target_group_health_check_path: /
 elb_listener_ssl_cert_arn: 'You_need_to_set_This_up_before_running_the_role' # e.g:  arn:aws:acm:us-east-1:123456789:certificate/a0a0a00-a00a0a0a0-a00a0a0a
 elb_fqdn: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-lb.{{ route53_hosted_domain }}"
 elb_dns_entry_overwrite: false
