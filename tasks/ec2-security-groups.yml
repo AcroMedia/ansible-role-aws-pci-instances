@@ -140,26 +140,47 @@
         from_port: 9600
         to_port: 9600
         group_id: "{{ ec2_group_app_result.group_id }}"
+        rule_desc: Logstash api from app nodes
       - proto: tcp
         from_port: 9600
         to_port: 9600
         group_id: "{{ ec2_group_filenode_result.group_id }}"
+        rule_desc: Logstash api from file nodes
       - proto: tcp
         from_port: 9600
         to_port: 9600
         group_id: "{{ ec2_group_bastion_result.group_id }}"
+        rule_desc: Logstash api from bastion nodes
+      - proto: tcp
+        from_port: 5044
+        to_port: 5044
+        group_id: "{{ ec2_group_app_result.group_id }}"
+        rule_desc: File beat from app nodes
+      - proto: tcp
+        from_port: 5044
+        to_port: 5044
+        group_id: "{{ ec2_group_filenode_result.group_id }}"
+        rule_desc: File beat from file nodes
+      - proto: tcp
+        from_port: 5044
+        to_port: 5044
+        group_id: "{{ ec2_group_bastion_result.group_id }}"
+        rule_desc: File beat from bastion nodes
       - proto: tcp
         from_port: 22
         to_port: 22
         group_id: "{{ ec2_group_bastion_result.group_id }}"
+        rule_desc: SSH from bastion
       - proto: tcp
         from_port: 80
         to_port: 80
         cidr_ip: 0.0.0.0/0
+        rule_desc: Public HTTP
       - proto: tcp
         from_port: 443
         to_port: 443
         cidr_ip: 0.0.0.0/0
+        rule_desc: Public HTTPS
 - name: Create a security group for the elk host
   ec2_group:
     name: "{{ ec2_group_name_elk }}"
