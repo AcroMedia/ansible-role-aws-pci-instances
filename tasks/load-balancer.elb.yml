@@ -5,7 +5,7 @@
       {% set outer_loop = loop %}
       {% for instance in result.tagged_instances %}
       {% if (loop.index0 > 0) or (outer_loop.index0 > 0) %},{% endif %}
-      {"Id": "{{ instance.id }}", "Port": 80}
+      {"Id": "{{ instance.id }}", "Port": {{ elb_target_group_port }}}
       {% endfor %}
       {% endfor %}
       ]'
