@@ -1,0 +1,14 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+  vars:
+    - aws_api_secret_key: 'test'
+    - aws_vpc_region: 'us-west-2'
+    - aws_api_access_key: 'test'
+    - aws_ssh_keypair_name: 'id_rsa.pub'
+
+  pre_tasks:
+
+  roles:
+    - role: ansible-role-aws-pci-instances
