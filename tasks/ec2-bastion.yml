@@ -88,6 +88,7 @@
     aws_access_key: "{{ aws_api_access_key }}"
     aws_secret_key: "{{ aws_api_secret_key }}"
     allow_reassociation: false
+    in_vpc: true
     device_id: "{{ ec2_bastion_result.tagged_instances[0].id }}"
   register: bastion_eip_result
 
