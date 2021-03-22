@@ -32,7 +32,7 @@
     verbosity: 1
 
 - set_fact:
-    ec2_group_name_lbs: "{{ aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' load balancers ' + aws_resource_name_suffix | trim }}"
+    ec2_group_name_lbs: "{{ (aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' load balancers ' + aws_resource_name_suffix) | trim }}"
 - name: Create a security group for the load balancer
   ec2_group:
     name: "{{ ec2_group_name_lbs }}"
@@ -61,7 +61,7 @@
         to_port: 22
         group_id: "{{ ec2_group_bastion_result.group_id }}"
         #group_id: "{{ aws_account_id }}/{{ ec2_group_bastion_result.group_id }}/{{ ec2_group_name_bastions }}"
-    ec2_group_name_appnodes: "{{ aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' app nodes ' + aws_resource_name_suffix | trim }}"
+    ec2_group_name_appnodes: "{{ (aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' app nodes ' + aws_resource_name_suffix) | trim }}"
 - name: Create a security group for the app nodes
   ec2_group:
     name: "{{ ec2_group_name_appnodes }}"
@@ -79,7 +79,7 @@
     verbosity: 1
 
 - set_fact:
-    ec2_group_name_dbnodes: "{{ aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' db nodes ' + aws_resource_name_suffix | trim }}"
+    ec2_group_name_dbnodes: "{{ (aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' db nodes ' + aws_resource_name_suffix) | trim }}"
     ec2_sg_rules_db_default:
       - proto: tcp
         from_port: 3306
@@ -114,7 +114,7 @@
         to_port: 22
         group_id: "{{ ec2_group_bastion_result.group_id }}"
         #group_id: "{{ aws_account_id }}/{{ ec2_group_bastion_result.group_id }}/{{ ec2_group_name_bastions }}"
-    ec2_group_name_filenodes: "{{ aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' file nodes ' + aws_resource_name_suffix | trim }}"
+    ec2_group_name_filenodes: "{{ (aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' file nodes ' + aws_resource_name_suffix) | trim }}"
 - name: Create a security group for the NFS/EFS instances
   ec2_group:
     name: "{{ ec2_group_name_filenodes }}"
@@ -134,7 +134,7 @@
     ec2_file_nodes_security_group_id: "{{ ec2_group_filenode_result.group_id }}"
 
 - set_fact:
-    ec2_group_name_elk: "{{ aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' elk ' + aws_resource_name_suffix | trim }}"
+    ec2_group_name_elk: "{{ (aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' elk ' + aws_resource_name_suffix) | trim }}"
     ec2_sg_rules_elk_default:
       - proto: tcp
         from_port: 9600
@@ -209,7 +209,7 @@
         to_port: 22
         group_id: "{{ ec2_group_bastion_result.group_id }}"
         #group_id: "{{ aws_account_id }}/{{ ec2_group_bastion_result.group_id }}/{{ ec2_group_name_bastions }}"
-    ec2_group_name_cachenodes: "{{ aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' cache nodes ' + aws_resource_name_suffix | trim }}"
+    ec2_group_name_cachenodes: "{{ (aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' cache nodes ' + aws_resource_name_suffix) | trim }}"
 - name: Create a security group for the Redis cache instances
   ec2_group:
     name: "{{ ec2_group_name_cachenodes }}"
