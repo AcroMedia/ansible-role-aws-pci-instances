@@ -56,11 +56,18 @@
         to_port: 80
         group_id: "{{ ec2_group_lb_result.group_id }}"
         #group_id: "{{ aws_account_id }}/{{ ec2_group_lb_result.group_id }}/{{ ec2_group_name_lbs }}"
+        rule_desc: Allow HTTP from Load Balancer
       - proto: tcp
         from_port: 22
         to_port: 22
         group_id: "{{ ec2_group_bastion_result.group_id }}"
         #group_id: "{{ aws_account_id }}/{{ ec2_group_bastion_result.group_id }}/{{ ec2_group_name_bastions }}"
+        rule_desc: Allow SSH from Bastion
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        group_id: "{{ ec2_group_lb_result.group_id }}"
+        rule_desc: Allow HTTPS from Load Balancer
     ec2_group_name_appnodes: "{{ (aws_resource_tag_slug + ' ' + aws_resource_env_slug + ' app nodes ' + aws_resource_name_suffix) | trim }}"
 - name: Create a security group for the app nodes
   ec2_group:
