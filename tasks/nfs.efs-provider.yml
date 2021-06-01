@@ -68,7 +68,7 @@
   set_fact:
     efs_access_points_results: []
 
-- name: Get list of current access points, because the supposedly idempotence-producing client token doesn't work worth beans.
+- name: Get list of current access points, because the 'create-access-point' command is not actually idempotent, as the docs claim.
   command: >
     aws efs describe-access-points --query 'AccessPoints[*].ClientToken'
   environment:
@@ -83,4 +83,4 @@
 
 - debug:
     var: efs_access_points_results
-    verbosity: 1
+    #verbosity: 1  # @TODO: Uncomment when finished working with EFS access points.

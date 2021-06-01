@@ -78,7 +78,6 @@ efs_throughput_mode: bursting
 efs_wait: no  # do we wait until service is provisioned before continuing with the rest of the tasks?
 efs_wait_timeout: 600 # in seconds
 ec2_sg_rules_nfs_extra: []  # Default security group rules allow connections from other generated group IDs, not specific addresses, so we provide additions instead of overrides.
-efs_access_points: []
 example_efs_access_points:
   - name: test
     root_dir_path: /test
@@ -104,6 +103,7 @@ example_efs_access_points:
     create_owner_uid: '2889'
     create_owner_gid: '889'
     create_mode: '2775'
+efs_access_points: []   # "{{ example_efs_access_points }}" ...used for testing.
 
 # App node creation
 ec2_app_node_count_per_subnet: 1

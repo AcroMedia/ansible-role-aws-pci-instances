@@ -1,4 +1,6 @@
 ---
+- import_tasks: ./require-utils.yml
+
 - import_tasks: ./ec2-ssh-keypair.yml
 
 - import_tasks: ./ec2-security-groups.yml

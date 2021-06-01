@@ -1,0 +1,10 @@
+---
+- name: Make sure aws is installed. Some operations don't have ansible modules.
+  command: >
+    aws --version
+
+- name: Make sure jq is installed. It may be used to parse aws cli output.
+  shell: >
+    jq --version
+  args:
+    executable: /bin/bash  

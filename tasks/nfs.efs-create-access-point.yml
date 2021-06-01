@@ -12,16 +12,30 @@
     src: "{{ role_path }}/templates/efs-create-access-point.json.j2"
     dest: "{{ efs_access_point_tmp.path }}"
 
-- name: Create EFS Access point
+# ------------- CREATE NEW ....
+- name: Create EFS Access point if it does not yet exist
   command: >
     aws efs create-access-point
     --cli-input-json file://{{ efs_access_point_tmp.path }}
-    --client-token "{{ _fsap_client_token }}"
   environment:
     AWS_ACCESS_KEY_ID: "{{ aws_api_access_key }}"
     AWS_SECRET_ACCESS_KEY: "{{ aws_api_secret_key }}"
     AWS_DEFAULT_REGION: "{{ aws_vpc_region }}"
   register: efs_access_point_result
+  when: _fsap_client_token not in existing_efs_access_points.stdout
+
+# ------------- ... OR DESCRIBE EXISTING.
+- name: Describe the previously created access point intstead of trying to create it
+  shell: >
+    set -o pipefail && aws efs describe-access-points | jq -r ".AccessPoints[]|select(.ClientToken==\"{{ _fsap_client_token }}\")"
+  args:
+    executable: /bin/bash
+  environment:
+    AWS_ACCESS_KEY_ID: "{{ aws_api_access_key }}"
+    AWS_SECRET_ACCESS_KEY: "{{ aws_api_secret_key }}"
+    AWS_DEFAULT_REGION: "{{ aws_vpc_region }}"
+  register: efs_access_point_result
+  when: _fsap_client_token in existing_efs_access_points.stdout
 
 - name: debug efs_access_point_result
   debug:
