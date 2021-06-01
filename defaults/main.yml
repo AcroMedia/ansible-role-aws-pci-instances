@@ -81,25 +81,25 @@ ec2_sg_rules_nfs_extra: []  # Default security group rules allow connections fro
 example_efs_access_points:
   - name: test
     root_dir_path: /test
-    posix_uid: '0'   # If other than zero, EFS will ignore the client, and operate as this user.
-    posix_gid: '0'   # If other than zero, EFS will ignore the client, and operate as this group.
+    posix_uid: '0'   # If specified, EFS will ignore the client, and operate as this user.
+    posix_gid: '0'   # If specified, EFS will ignore the client, and operate as this group.
     secondary_gids: '0'
     create_owner_uid: '1000'
     create_owner_gid: '1000'
     create_mode: '2775'
   - name: test2
     root_dir_path: /test2
-    posix_uid: '0'   # If other than zero, EFS will ignore the client, and operate as this user.
-    posix_gid: '0'   # If other than zero, EFS will ignore the client, and operate as this group.
-    secondary_gids: '0'
+    # posix_uid: '0'   # If specified, EFS will ignore the client, and operate as this user.
+    # posix_gid: '0'   # If specified, EFS will ignore the client, and operate as this group.
+    # secondary_gids: '0'
     create_owner_uid: '1002'
     create_owner_gid: '1002'
     create_mode: '2775'
   - name: test3
     root_dir_path: /test3
-    posix_uid: '0'   # If other than zero, EFS will ignore the client, and operate as this user.
-    posix_gid: '0'   # If other than zero, EFS will ignore the client, and operate as this group.
-    secondary_gids: '0'
+    # posix_uid: '0'   # If specified, EFS will ignore the client, and operate as this user.
+    # posix_gid: '0'   # If specified, EFS will ignore the client, and operate as this group.
+    # secondary_gids: '0'
     create_owner_uid: '2889'
     create_owner_gid: '889'
     create_mode: '2775'

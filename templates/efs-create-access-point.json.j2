@@ -14,13 +14,17 @@
 {% endfor %}
     ],
     "FileSystemId": "{{ efs_result.efs.file_system_id }}",
+{% if item.posix_uid is defined and item.posix_gid is defined %}
     "PosixUser": {
         "Uid": {{ item.posix_uid }},
         "Gid": {{ item.posix_gid }},
         "SecondaryGids": [
+{% if item.secondary_gids is defined %}
             {{ item.secondary_gids }}
+{% endif %}
         ]
     },
+{% endif %}
     "RootDirectory": {
         "Path": "{{ item.root_dir_path }}",
         "CreationInfo": {
