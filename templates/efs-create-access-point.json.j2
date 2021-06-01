@@ -1,0 +1,34 @@
+{
+{#
+    "ClientToken": "{{ _fsap_client_token }}",
+    #}
+    "Tags": [
+        {
+            "Key": "Name",
+            "Value": "{{ item.name }}"
+        }
+{% for tagname, tagvalue in aws_billing_tags.items() %}
+        ,
+        {
+            "Key": "{{ tagname }}",
+            "Value": "{{ tagvalue }}"
+        }
+{% endfor %}
+    ],
+    "FileSystemId": "{{ efs_result.efs.file_system_id }}",
+    "PosixUser": {
+        "Uid": {{ item.posix_uid }},
+        "Gid": {{ item.posix_gid }},
+        "SecondaryGids": [
+            {{ item.secondary_gids }}
+        ]
+    },
+    "RootDirectory": {
+        "Path": "{{ item.root_dir_path }}",
+        "CreationInfo": {
+            "OwnerUid": {{ item.create_owner_uid }},
+            "OwnerGid": {{ item.create_owner_gid }},
+            "Permissions": "{{ item.create_mode }}"
+        }
+    }
+}

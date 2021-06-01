@@ -1,0 +1,37 @@
+---
+- name: Create a template for the json content
+  tempfile:
+    state: file
+  register: efs_access_point_tmp
+
+- set_fact:
+    _fsap_client_token: "{{ aws_resource_tag_slug.lower() }}-{{ aws_resource_env_slug.lower() }}-efsap{{ item.root_dir_path | replace('/','-') }}"
+
+- name: Build EFS Access point CLI json file
+  template:
+    src: "{{ role_path }}/templates/efs-create-access-point.json.j2"
+    dest: "{{ efs_access_point_tmp.path }}"
+
+- name: Create EFS Access point
+  command: >
+    aws efs create-access-point
+    --cli-input-json file://{{ efs_access_point_tmp.path }}
+    --client-token "{{ _fsap_client_token }}"
+  environment:
+    AWS_ACCESS_KEY_ID: "{{ aws_api_access_key }}"
+    AWS_SECRET_ACCESS_KEY: "{{ aws_api_secret_key }}"
+    AWS_DEFAULT_REGION: "{{ aws_vpc_region }}"
+  register: efs_access_point_result
+
+- name: debug efs_access_point_result
+  debug:
+    var: efs_access_point_result
+    verbosity: 1
+
+- name: Clean up
+  file:
+    dest: "{{ efs_access_point_tmp.path }}"
+    state: absent
+
+- set_fact:
+    efs_access_points_results: "{{ efs_access_points_results + [ efs_access_point_result ] }}"

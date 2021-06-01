@@ -78,6 +78,32 @@ efs_throughput_mode: bursting
 efs_wait: no  # do we wait until service is provisioned before continuing with the rest of the tasks?
 efs_wait_timeout: 600 # in seconds
 ec2_sg_rules_nfs_extra: []  # Default security group rules allow connections from other generated group IDs, not specific addresses, so we provide additions instead of overrides.
+efs_access_points: []
+example_efs_access_points:
+  - name: test
+    root_dir_path: /test
+    posix_uid: '0'   # If other than zero, EFS will ignore the client, and operate as this user.
+    posix_gid: '0'   # If other than zero, EFS will ignore the client, and operate as this group.
+    secondary_gids: '0'
+    create_owner_uid: '1000'
+    create_owner_gid: '1000'
+    create_mode: '2775'
+  - name: test2
+    root_dir_path: /test2
+    posix_uid: '0'   # If other than zero, EFS will ignore the client, and operate as this user.
+    posix_gid: '0'   # If other than zero, EFS will ignore the client, and operate as this group.
+    secondary_gids: '0'
+    create_owner_uid: '1002'
+    create_owner_gid: '1002'
+    create_mode: '2775'
+  - name: test3
+    root_dir_path: /test3
+    posix_uid: '0'   # If other than zero, EFS will ignore the client, and operate as this user.
+    posix_gid: '0'   # If other than zero, EFS will ignore the client, and operate as this group.
+    secondary_gids: '0'
+    create_owner_uid: '2889'
+    create_owner_gid: '889'
+    create_mode: '2775'
 
 # App node creation
 ec2_app_node_count_per_subnet: 1

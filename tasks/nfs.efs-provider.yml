@@ -49,7 +49,8 @@
     targets: "{{ efs_target_list_as_json }}"
   register: efs_result
 
-- debug:
+- name: debug efs_result
+  debug:
     var: efs_result
     verbosity: 1
 
@@ -58,6 +59,28 @@
     efs_address: "{{ efs_result.efs.filesystem_address }}"
     nfs_endpoint: "{{ efs_result.efs.filesystem_address.split(':')[0] }}"
 
-- debug:
+- name: nfs_endpoint
+  debug:
     var: nfs_endpoint
+    verbosity: 1
+
+- name: Create an empty array, which we will populate with individual 'efs_access_point_result' items, since each efs_access_point_result will overwrite the previous one because of the include loop.
+  set_fact:
+    efs_access_points_results: []
+
+- name: Get list of current access points, because the supposedly idempotence-producing client token doesn't work worth beans.
+  command: >
+    aws efs describe-access-points --query 'AccessPoints[*].ClientToken'
+  environment:
+    AWS_ACCESS_KEY_ID: "{{ aws_api_access_key }}"
+    AWS_SECRET_ACCESS_KEY: "{{ aws_api_secret_key }}"
+    AWS_DEFAULT_REGION: "{{ aws_vpc_region }}"
+  register: existing_efs_access_points
+
+- name: Create EFS Access Point(s)
+  include_tasks: nfs.efs-create-access-point.yml
+  with_items: "{{ efs_access_points }}"
+
+- debug:
+    var: efs_access_points_results
     verbosity: 1
