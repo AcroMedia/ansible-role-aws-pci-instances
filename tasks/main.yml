@@ -4,6 +4,7 @@
 - import_tasks: ./ec2-security-groups.yml
 
 - import_tasks: ./ec2-bastion.yml
+  when: bastion_provider == 'ec2'
 
 - import_tasks: ./database.yml
 
