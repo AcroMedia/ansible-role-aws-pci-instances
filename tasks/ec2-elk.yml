@@ -91,6 +91,7 @@
     aws_secret_key: "{{ aws_api_secret_key }}"
     allow_reassociation: false
     device_id: "{{ ec2_elk_node_result.tagged_instances[0].id }}"
+    in_vpc: true
   register: elk_node_eip_result
 
 - debug:
