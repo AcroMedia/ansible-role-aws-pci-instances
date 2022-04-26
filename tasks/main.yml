@@ -3,12 +3,11 @@
 
 - import_tasks: ./ec2-security-groups.yml
 
-- import_tasks: ./ec2-bastion.yml
-  when: bastion_provider == 'ec2'
+- include_tasks: ./bastion.{{ bastion_provider }}.yml
 
 - import_tasks: ./database.yml
 
-- import_tasks: ./elasticache.yml
+- include_tasks: ./elasticache.yml
   when: elasticache_az_mode != 'none'
 
 - import_tasks: ./nfs.yml

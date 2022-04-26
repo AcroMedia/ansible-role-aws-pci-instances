@@ -1,0 +1,2 @@
+---
+# This file is a no-op that skips bastion creation when it's not needed.
