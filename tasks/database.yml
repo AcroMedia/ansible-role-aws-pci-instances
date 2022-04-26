@@ -1,2 +1,2 @@
 ---
-- import_tasks: ./database.{{ aws_database_provider }}.yml
+- include_tasks: ./database.{{ aws_database_provider }}.yml
