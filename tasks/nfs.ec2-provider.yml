@@ -28,6 +28,11 @@
     state: present
   register: ec2_nfs_node_iam_role_result
 
+- name: Pause (aws_iam_role_creation_pause_seconds={{ aws_iam_role_creation_pause_seconds }}) to wait for the IAM role to be ready. Trying to use the role too soon will cause the EC2 creation task to fail.
+  pause:
+    seconds: "{{ aws_iam_role_creation_pause_seconds }}"
+  when: ec2_nfs_node_iam_role_result.changed
+
 - name: Create an EC2 NFS node
   ec2:
     key_name: "{{ aws_ssh_keypair_name }}"

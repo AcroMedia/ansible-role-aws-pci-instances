@@ -16,6 +16,9 @@ aws_resource_tag_slug: CHANGE_ME
 aws_resource_env_slug: CHANGE_ME_TOO
 aws_resource_name_suffix: by Ansible
 
+# When creating IAM roles, the role *should* be ready in a couple of seconds. 10 should be more than enough.
+aws_iam_role_creation_pause_seconds: '10'
+
 ec2_ssh_pubkey_path: '~/.ssh/id_rsa.pub'  # Where on your local machine can the role find your RSA SSH public key?
 
 route53_hosted_domain: subdomain.example.com    # This must already be set up and working.
