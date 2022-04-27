@@ -101,7 +101,7 @@
     var: ec2_app_node_volume_info
     verbosity: 1
 
-- name: Apply tags to app node volumes
+- name: Apply tags to app node volumes (attachment_set as object)
   ec2_tag:
     aws_access_key: "{{ aws_api_access_key }}"
     aws_secret_key: "{{ aws_api_secret_key }}"
@@ -111,6 +111,19 @@
     tags: "{{ aws_billing_tags | combine({'Name': ec2_app_node_fqdn + ' ' + item.attachment_set.device }) }}"
   with_items: "{{ ec2_app_node_volume_info }}"
   register: appnode_vol_tag_result
+  when: item.attachment_set.device is defined
+
+- name: Apply tags to app node volumes (attachment_set as list)
+  ec2_tag:
+    aws_access_key: "{{ aws_api_access_key }}"
+    aws_secret_key: "{{ aws_api_secret_key }}"
+    region: "{{ aws_vpc_region }}"
+    resource: "{{ item.id }}"
+    state: present
+    tags: "{{ aws_billing_tags | combine({'Name': ec2_app_node_fqdn + ' ' + item.attachment_set[0].device }) }}"
+  with_items: "{{ ec2_app_node_volume_info }}"
+  register: appnode_vol_tag_result
+  when: item.attachment_set[0].device is defined
 
 - debug:
     var: appnode_vol_tag_result
