@@ -16,7 +16,8 @@ function main () {
 
     # Gather some useful information,
     PRIVATE_IP=$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p') || true
-    INSTANCE_ID=$(curl -sS http://169.254.169.254/latest/meta-data/instance-id)
+    TOKEN=$(curl -sS -X PUT http://169.254.169.254/latest/api/token)
+    INSTANCE_ID=$(curl -sS http://169.254.169.254/latest/meta-data/instance-id -H "X-aws-ec2-metadata-token: $TOKEN")
     SSH_FINGERPRINT=$(ssh-keygen -lf /etc/ssh/ssh_host_ecdsa_key.pub | awk '{print $2}')
 
     mkdir -p /root/git/acro
